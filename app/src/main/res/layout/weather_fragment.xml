@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
              android:orientation="vertical"
              android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="@color/colorPrimary">
+             android:layout_height="match_parent">
 
     <com.mypopsy.widget.FloatingSearchView
         android:id="@+id/search_view"
@@ -16,6 +16,8 @@
         android:elevation="8dp" />
 
     <LinearLayout
+        android:id="@+id/empty_layout"
+        android:background="@color/colorPrimary"
         android:gravity="center"
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -33,6 +35,29 @@
             android:gravity="center"
             android:layout_height="wrap_content"
             android:text="@string/empty_screen" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/weather_layouts"
+        android:layout_marginTop="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toronto"
+            tools:text="Toronto" />
+
+        <TextView
+            android:id="@+id/temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="23 C"
+            tools:text="23 C" />
     </LinearLayout>
 
 </FrameLayout>

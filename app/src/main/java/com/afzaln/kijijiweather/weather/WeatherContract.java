@@ -2,8 +2,8 @@ package com.afzaln.kijijiweather.weather;
 
 import android.support.annotation.NonNull;
 
-import com.afzaln.kijijiweather.BasePresenter;
-import com.afzaln.kijijiweather.BaseView;
+import com.afzaln.kijijiweather.util.BasePresenter;
+import com.afzaln.kijijiweather.util.BaseView;
 import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.Weather;
 

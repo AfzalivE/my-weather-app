@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.afzaln.kijijiweather;
+package com.afzaln.kijijiweather.util;
 
 public interface BasePresenter {
 
