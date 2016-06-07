@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@color/colorPrimary">
+
+    <com.mypopsy.widget.FloatingSearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Kijiji Weather"
+        app:fsv_menu="@menu/search_menu"
+        app:fsv_icon="@drawable/ic_arrow_back_24dp"
+        android:elevation="8dp" />
+
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:src="@drawable/empty_weather"
+            android:layout_gravity="center"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:text="@string/empty_screen" />
+    </LinearLayout>
+
+</FrameLayout>

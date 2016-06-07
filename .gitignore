@@ -23,3 +23,4 @@ keystore.properties
 *.iws
 .idea/
 *.iml
+*.hprof
