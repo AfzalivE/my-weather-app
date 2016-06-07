@@ -19,7 +19,6 @@ package com.afzaln.kijijiweather;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.afzaln.kijijiweather.data.source.TasksDataSource;
 import com.afzaln.kijijiweather.data.source.WeatherRepository;
 import com.afzaln.kijijiweather.data.source.local.WeatherLocalDataSource;
 import com.afzaln.kijijiweather.data.source.remote.WeatherRemoteDataSource;
