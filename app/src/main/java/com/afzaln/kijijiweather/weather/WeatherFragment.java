@@ -165,7 +165,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         weatherLayout.setVisibility(View.VISIBLE);
 
         cityView.setText(weather.name);
-        tempView.setText(String.format("%d C", String.valueOf(weather.main.temp)));
+        tempView.setText(String.valueOf(weather.main.temp));
         weatherTextView.setText(weather.weather[0].description);
 
     }
@@ -179,7 +179,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
 
     @Override
     public void showError(String message) {
-
+        Timber.d("Error occurred: " + message);
     }
 
     @Override
