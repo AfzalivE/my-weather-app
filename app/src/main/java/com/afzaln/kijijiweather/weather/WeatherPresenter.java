@@ -1,5 +1,7 @@
 package com.afzaln.kijijiweather.weather;
 
+import java.util.List;
+
 import android.support.annotation.NonNull;
 
 import com.afzaln.kijijiweather.data.Search;
@@ -31,7 +33,7 @@ public class WeatherPresenter implements Presenter {
 
     @Override
     public void subscribe() {
-        loadLastWeather();
+        loadSearchesAndLastWeather();
     }
 
     @Override
@@ -40,11 +42,14 @@ public class WeatherPresenter implements Presenter {
     }
 
     @Override
-    public void doWeatherSearch(String searchStr) {
+    public void doWeatherSearch(String searchStr, boolean isFromRecentSearch) {
         if (searchStr == null || searchStr.isEmpty()) {
             // don't do anything if the EditText is empty
         } else {
-            weatherRepository.saveRecentSearch(searchStr);
+            if (!isFromRecentSearch) {
+                weatherRepository.saveRecentSearch(searchStr);
+                loadSearches();
+            }
             loadWeather(true, searchStr);
         }
     }
@@ -53,28 +58,35 @@ public class WeatherPresenter implements Presenter {
     public void deleteRecentSearch(@NonNull Search search) {
         if (search != null) {
             weatherRepository.deleteRecentSearch(search.getTimestamp());
+            loadSearches();
         }
     }
 
-    private void loadLastWeather() {
-        weatherView.setLoadingIndicator(true);
+    private void loadSearches() {
         subscriptions.clear();
 
         Subscription subscription = weatherRepository.getRecentSearches()
-                .map(searches -> {
-                    if (searches.isEmpty()) {
-                        return null; // no previous searches
-                    } else {
-                        return searches.get(0);
-                    }
-                })
-                .subscribe(search -> {
-                    if (search != null) {
-                        loadWeather(true, search.getSearchStr());
+                .subscribe(searches -> {
+                    processSearches(searches);
+                });
+
+        subscriptions.add(subscription);
+    }
+
+    private void loadSearchesAndLastWeather() {
+        subscriptions.clear();
+
+        Subscription subscription = weatherRepository.getRecentSearches()
+                .subscribe(searches -> {
+                    if (!searches.isEmpty()) {
+                        processSearches(searches);
+                        loadWeather(true, searches.get(0).getSearchStr());
                     } else {
                         processEmptyWeather();
                     }
                 });
+
+        subscriptions.add(subscription);
     }
 
     private void loadWeather(boolean forceUpdate, String cityName) {
@@ -103,15 +115,22 @@ public class WeatherPresenter implements Presenter {
         subscriptions.add(subscription);
     }
 
+    private void processSearches(List<Search> searches) {
+        weatherView.populateRecentSearches(searches);
+    }
+
     private void processEmptyWeather() {
-        weatherView.showNoWeather();
+        weatherView.showEmptyWeather();
+        weatherView.setLoadingIndicator(false);
     }
 
     private void processWeather(Weather weather) {
         weatherView.showWeather(weather);
+        weatherView.setLoadingIndicator(false);
     }
 
     private void processError(Throwable throwable) {
         weatherView.showError(throwable.getMessage());
+        weatherView.setLoadingIndicator(false);
     }
 }

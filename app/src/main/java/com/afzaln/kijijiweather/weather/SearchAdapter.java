@@ -1,6 +1,7 @@
 package com.afzaln.kijijiweather.weather;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,7 +23,7 @@ import com.afzaln.kijijiweather.weather.SearchAdapter.SearchVH;
 public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
 
     private final SearchItemClickListener listener;
-    ArrayList<Search> searches = new ArrayList<>();
+    List<Search> searches = new ArrayList<>();
 
     SearchAdapter(SearchItemClickListener listener) {
         this.listener = listener;
@@ -49,7 +50,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
         return searches.size();
     }
 
-    public void setSearches(ArrayList<Search> searches) {
+    public void setSearches(List<Search> searches) {
         this.searches = searches;
         notifyDataSetChanged();
     }

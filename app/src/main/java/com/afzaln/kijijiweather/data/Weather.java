@@ -1,5 +1,7 @@
 package com.afzaln.kijijiweather.data;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by afzal on 2016-06-04.
  */
@@ -10,6 +12,8 @@ public final class Weather {
     public Main main;
     public Wind wind;
     public Clouds clouds;
+    public RainSnow rain;
+    public RainSnow snow;
     public long dt;
     public Sys sys;
     public long id;
@@ -30,7 +34,7 @@ public final class Weather {
 
     public static final class Main {
         public double temp;
-        public long pressure;
+        public double pressure;
         public long humidity;
         public double temp_min;
         public double temp_max;
@@ -38,11 +42,16 @@ public final class Weather {
 
     public static final class Wind {
         public double speed;
-        public long deg;
+        public double deg;
     }
 
     public static final class Clouds {
         public long all;
+    }
+
+    public static final class RainSnow {
+        @SerializedName("3h")
+        public double volume;
     }
 
     public static final class Sys {

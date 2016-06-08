@@ -1,5 +1,7 @@
 package com.afzaln.kijijiweather.weather;
 
+import java.util.List;
+
 import android.support.annotation.NonNull;
 
 import com.afzaln.kijijiweather.util.BasePresenter;
@@ -14,13 +16,13 @@ public class WeatherContract {
     interface  View extends BaseView<Presenter> {
         void setLoadingIndicator(boolean show);
         void showWeather(Weather weather);
-        void showNoWeather();
+        void showEmptyWeather();
         void showError(String message);
+        void populateRecentSearches(List<Search> searches);
     }
 
     interface Presenter extends BasePresenter {
-
-        void doWeatherSearch(String searchStr);
+        void doWeatherSearch(String searchStr, boolean isFromRecentSearch);
         void deleteRecentSearch(@NonNull Search search);
     }
 }

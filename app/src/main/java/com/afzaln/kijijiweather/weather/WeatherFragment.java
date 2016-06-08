@@ -1,6 +1,7 @@
 package com.afzaln.kijijiweather.weather;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import butterknife.BindView;
 import com.afzaln.kijijiweather.R;
@@ -23,14 +26,30 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by afzal on 2016-06-04.
  */
 public class WeatherFragment extends BaseFragment implements WeatherContract.View {
-    private WeatherContract.Presenter mPresenter;
+    private WeatherContract.Presenter weatherPresenter;
 
     @BindView(R.id.search_view)
-    protected FloatingSearchView mSearchView;
+    FloatingSearchView mSearchView;
+
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+
+    @BindView(R.id.weather_layout)
+    LinearLayout weatherLayout;
+
+    @BindView(R.id.city)
+    TextView cityView;
+
+    @BindView(R.id.temp)
+    TextView tempView;
+
+    @BindView(R.id.weather_text)
+    TextView weatherTextView;
+
     private SearchItemClickListener searchClickListener = new SearchItemClickListener() {
         @Override
         public void delete(Search search) {
-            Timber.d("deleted " + search.getSearchStr());
+            deleteSearch(search);
         }
 
         @Override
@@ -39,9 +58,17 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
             mSearchView.setActivated(false);
             mSearchView.setText(search.getSearchStr());
             showProgressBar(true);
+            executeSearch(search.getSearchStr(), true);
         }
     };
 
+    private void deleteSearch(Search search) {
+        String searchStr = search.getSearchStr();
+        weatherPresenter.deleteRecentSearch(search);
+        Timber.d("deleted " + searchStr);
+    }
+
+    private SearchAdapter searchAdapter;
 
     public static WeatherFragment newInstance() {
         WeatherFragment fragment = new WeatherFragment();
@@ -53,27 +80,27 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
     @Override
     public void onResume() {
         super.onResume();
-        mPresenter.subscribe();
+        weatherPresenter.subscribe();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mPresenter.unsubscribe();
+        weatherPresenter.unsubscribe();
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SearchAdapter adapter = new SearchAdapter(searchClickListener);
-        ArrayList<Search> searches = new ArrayList<>();
-        searches.add(new Search("Toronto, Canada"));
-        searches.add(new Search("Portland, United States"));
-        searches.add(new Search("London, United Kingdom"));
-        adapter.setSearches(searches);
+        searchAdapter = new SearchAdapter(searchClickListener);
+//        ArrayList<Search> searches = new ArrayList<>();
+//        searches.add(new Search("Toronto, Canada"));
+//        searches.add(new Search("Portland, United States"));
+//        searches.add(new Search("London, United Kingdom"));
+//        searchAdapter.setSearches(searches);
 
-        initSearchView(adapter);
+        initSearchView(searchAdapter);
     }
 
     private void initSearchView(SearchAdapter adapter) {
@@ -83,9 +110,10 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         EditText searchEditText = (EditText) mSearchView.findViewById(R.id.fsv_search_text);
         searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 
-        mSearchView.setOnSearchListener(charSequence -> {
+        mSearchView.setOnSearchListener(searchStr -> {
             mSearchView.setActivated(false);
-            Timber.d("Searched for " + charSequence);
+            Timber.d("Searching for " + searchStr);
+            executeSearch(searchStr.toString(), false);
             showProgressBar(true);
         });
 
@@ -121,24 +149,43 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         });
     }
 
+    private void executeSearch(String searchStr, boolean isFromRecentSearch) {
+        weatherPresenter.doWeatherSearch(searchStr, isFromRecentSearch);
+    }
+
     @Override
     public void setLoadingIndicator(boolean show) {
-
+        showProgressBar(show);
     }
 
     @Override
     public void showWeather(Weather weather) {
+        Timber.d("Showing weather for: " + weather.name);
+        emptyLayout.setVisibility(View.GONE);
+        weatherLayout.setVisibility(View.VISIBLE);
+
+        cityView.setText(weather.name);
+        tempView.setText(String.format("%d C", String.valueOf(weather.main.temp)));
+        weatherTextView.setText(weather.weather[0].description);
 
     }
 
     @Override
-    public void showNoWeather() {
-
+    public void showEmptyWeather() {
+        Timber.d("Showing empty weather");
+        emptyLayout.setVisibility(View.VISIBLE);
+        weatherLayout.setVisibility(View.GONE);
     }
 
     @Override
     public void showError(String message) {
 
+    }
+
+    @Override
+    public void populateRecentSearches(List<Search> searches) {
+        Timber.d("Populating recent searches");
+        searchAdapter.setSearches(searches);
     }
 
     private void showProgressBar(boolean show) {
@@ -151,6 +198,6 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
 
     @Override
     public void setPresenter(@NonNull WeatherContract.Presenter presenter) {
-        mPresenter = checkNotNull(presenter);
+        weatherPresenter = checkNotNull(presenter);
     }
 }
