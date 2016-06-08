@@ -1,4 +1,4 @@
-package com.afzaln.kijijiweather.weather;
+package com.afzaln.kijijiweather.ui;
 
 import android.content.Context;
 import android.widget.ProgressBar;

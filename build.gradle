@@ -16,7 +16,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven { url "https://jitpack.io/#renaudcerrato/FloatingSearchView" }
+        maven { url "https://jitpack.io/#afzalive/FloatingSearchView" }
     }
 }
 
@@ -47,7 +47,7 @@ ext {
     retrofitRxCallAdapterVersion = '2.0.2'
     retrofitLoggingVersion = '3.3.1'
     powermockVersion = '1.6.5'
-    floatingSearchViewVersion = '1.0.1'
+    floatingSearchViewVersion = 'master-SNAPSHOT'
 
     // test dependencies
     junitVersion = '4.12'

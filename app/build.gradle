@@ -101,7 +101,7 @@ dependencies {
     compile "com.squareup.retrofit2:converter-gson:$rootProject.retrofitGsonConverterVersion"
     compile "com.squareup.retrofit2:adapter-rxjava:$rootProject.retrofitRxCallAdapterVersion"
 
-    compile "com.github.renaudcerrato:FloatingSearchView:$rootProject.floatingSearchViewVersion"
+    compile "com.github.afzalive:FloatingSearchView:$rootProject.floatingSearchViewVersion"
 
     // Debugging dependencies
     compile "com.jakewharton.timber:timber:$rootProject.timberVersion"
