@@ -49,12 +49,16 @@ public class WeatherLocalDataSource implements WeatherDataSource {
     }
 
     @Override
-    public void saveRecentSearch(String searchStr) {
-        checkNotNull(searchStr);
+    public void saveRecentSearch(Search search) {
+        checkNotNull(search);
+        if (!search.areCoordinatesSet) {
+            // don't save the search if coordinates aren't set
+            throw new IllegalArgumentException("Search object should have latitude and longitude");
+        }
         getRealm().beginTransaction();
-        Search realmSearch = getRealm().createObject(Search.class);
-        realmSearch.setTimestamp(System.currentTimeMillis());
-        realmSearch.setSearchStr(searchStr);
+        // delete existing search of the same term
+        getRealm().where(Search.class).equalTo("hashCode", search.hashCode()).findAll().deleteAllFromRealm();
+        Search realmSearch = getRealm().copyToRealm(search);
         getRealm().commitTransaction();
     }
 
@@ -79,12 +83,11 @@ public class WeatherLocalDataSource implements WeatherDataSource {
         getRealm().commitTransaction();
     }
 
-
     // we don't fetch weather from the local database so just return null
     // this method isn't called at all, and throws an exception if it is called
     // by mistake, failing the unit tests
     @Override
-    public Observable<Weather> getWeather(String cityName) {
+    public Observable<Weather> getWeather(Search search) {
         throw new UnsupportedOperationException("Local database is not used to fetch weather information yet");
     }
 }

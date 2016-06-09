@@ -50,7 +50,8 @@
 
         <TextView
             android:id="@+id/city"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textSize="48sp"
@@ -121,22 +122,60 @@
 
         <LinearLayout
             android:gravity="center_horizontal|bottom"
+            android:paddingTop="36dp"
             android:paddingBottom="16dp"
             android:orientation="horizontal"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:weightSum="5">
 
-            <include layout="@layout/oneday_layout" />
+            <com.afzaln.kijijiweather.ui.WeatherInfoView
+                android:id="@+id/rain"
+                android:layout_weight="1"
+                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_labelText="Rain"
+                app:wiv_value="23 %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <include layout="@layout/oneday_layout" />
+            <com.afzaln.kijijiweather.ui.WeatherInfoView
+                android:id="@+id/clouds"
+                android:layout_weight="1"
+                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_labelText="Clouds"
+                app:wiv_value="23 %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <include layout="@layout/oneday_layout" />
+            <com.afzaln.kijijiweather.ui.WeatherInfoView
+                android:id="@+id/wind"
+                android:layout_weight="1"
+                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_labelText="Wind"
+                app:wiv_value="23 m/s"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <include layout="@layout/oneday_layout" />
+            <com.afzaln.kijijiweather.ui.WeatherInfoView
+                android:id="@+id/pressure"
+                android:layout_weight="1"
+                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_labelText="Pressure"
+                app:wiv_value="23.000 hPa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <include layout="@layout/oneday_layout" />
+            <com.afzaln.kijijiweather.ui.WeatherInfoView
+                android:id="@+id/humidity"
+                android:layout_weight="1"
+                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_labelText="Humidity"
+                app:wiv_value="23 %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

@@ -92,6 +92,8 @@ dependencies {
     compile "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
     compile "com.google.guava:guava:$rootProject.guavaVersion"
 
+    compile "com.google.android.gms:play-services-location:$rootProject.gmsLocationVersion"
+
     compile "io.reactivex:rxjava:$rootProject.rxJavaVersion"
     compile "io.reactivex:rxandroid:$rootProject.rxAndroidVersion"
 
@@ -100,7 +102,6 @@ dependencies {
     compile "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
     compile "com.squareup.retrofit2:converter-gson:$rootProject.retrofitGsonConverterVersion"
     compile "com.squareup.retrofit2:adapter-rxjava:$rootProject.retrofitRxCallAdapterVersion"
-
     compile "com.github.afzalive:FloatingSearchView:$rootProject.floatingSearchViewVersion"
 
     // Debugging dependencies

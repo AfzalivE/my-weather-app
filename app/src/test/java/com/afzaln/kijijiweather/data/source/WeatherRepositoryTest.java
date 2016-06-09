@@ -14,6 +14,7 @@ import android.content.Context;
 
 import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.Weather;
+import com.afzaln.kijijiweather.data.Weather.Coord;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
@@ -25,8 +26,12 @@ import static org.mockito.Mockito.*;
  * Created by afzal on 2016-06-04.
  */
 public class WeatherRepositoryTest {
+    static Search CITY_NAME_SEARCH = new Search();
+    static Search TEST_SEARCH = new Search();
 
-    private static final String CITY_NAME = "Toronto";
+    static {
+        CITY_NAME_SEARCH.setSearchStr("Toronto");
+    }
 
     private WeatherRepository weatherRepository;
 
@@ -43,7 +48,11 @@ public class WeatherRepositoryTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 //        weatherRemoteDataSource = WeatherRemoteDataSource.getInstance();
-        when(weatherRemoteDataSource.getWeather(CITY_NAME)).thenReturn(Observable.just(new Weather()));
+        Weather responseWeather = new Weather();
+        responseWeather.coord = new Coord();
+        responseWeather.coord.lat = 0;
+        responseWeather.coord.lon = 0;
+        when(weatherRemoteDataSource.getWeather(CITY_NAME_SEARCH)).thenReturn(Observable.just(responseWeather));
         Observable<ArrayList<Search>> just = Observable.just(listOf("test1", "test2"));
         OngoingStubbing<Observable<? extends List<Search>>> when = when(weatherLocalDataSource.getRecentSearches());
         when.thenReturn(just);
@@ -55,7 +64,6 @@ public class WeatherRepositoryTest {
         ArrayList<Search> searches = new ArrayList<>();
         for (String searchStr : searchStrs) {
             Search search = new Search();
-            search.setTimestamp(System.currentTimeMillis());
             search.setSearchStr(searchStr);
             searches.add(search);
         }
@@ -72,12 +80,12 @@ public class WeatherRepositoryTest {
     public void getWeather_requestWeatherFromApi() {
         TestSubscriber<Weather> testSubscriber = new TestSubscriber<>();
 
-        weatherRepository.getWeather(CITY_NAME).subscribe(testSubscriber);
+        weatherRepository.getWeather(CITY_NAME_SEARCH).subscribe(testSubscriber);
 
         List<Weather> onNextEvents = testSubscriber.getOnNextEvents();
 
-        verify(weatherRemoteDataSource).getWeather(CITY_NAME);
-        verify(weatherLocalDataSource, never()).getWeather(CITY_NAME);
+        verify(weatherRemoteDataSource).getWeather(CITY_NAME_SEARCH);
+        verify(weatherLocalDataSource, never()).getWeather(CITY_NAME_SEARCH);
         assertThat(weatherRepository.cachedWeather.size(), is(1));
     }
 
@@ -96,10 +104,10 @@ public class WeatherRepositoryTest {
 
     @Test
     public void saveRecentSearch() {
-        weatherRepository.saveRecentSearch("test1");
+        weatherRepository.saveRecentSearch(TEST_SEARCH);
 
-        verify(weatherRemoteDataSource, never()).saveRecentSearch("test1");
-        verify(weatherLocalDataSource).saveRecentSearch("test1");
+        verify(weatherRemoteDataSource, never()).saveRecentSearch(TEST_SEARCH);
+        verify(weatherLocalDataSource).saveRecentSearch(TEST_SEARCH);
     }
 
     @Test

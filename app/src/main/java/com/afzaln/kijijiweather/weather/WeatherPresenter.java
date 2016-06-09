@@ -7,13 +7,14 @@ import android.support.annotation.NonNull;
 import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.data.source.WeatherRepository;
+import com.afzaln.kijijiweather.data.source.location.LocationProvider;
 import com.afzaln.kijijiweather.weather.WeatherContract.Presenter;
+import com.afzaln.kijijiweather.weather.WeatherContract.View;
+import static com.google.common.base.Preconditions.checkNotNull;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by afzal on 2016-06-04.
@@ -21,11 +22,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class WeatherPresenter implements Presenter {
     private final WeatherRepository weatherRepository;
     private final WeatherContract.View weatherView;
+    private final LocationProvider locationProvider;
 
     private CompositeSubscription subscriptions;
 
-    public WeatherPresenter(@NonNull WeatherRepository weatherRepository, @NonNull WeatherContract.View weatherView) {
+    public WeatherPresenter(@NonNull WeatherRepository weatherRepository, LocationProvider locationProvider, @NonNull View weatherView) {
         this.weatherRepository = checkNotNull(weatherRepository);
+        this.locationProvider = checkNotNull(locationProvider);
         this.weatherView = checkNotNull(weatherView, "weatherView cannot be null");
         weatherView.setPresenter(this);
         subscriptions = new CompositeSubscription();
@@ -42,15 +45,31 @@ public class WeatherPresenter implements Presenter {
     }
 
     @Override
-    public void doWeatherSearch(String searchStr, boolean isFromRecentSearch) {
+    public void doCoordinatesWeatherSearch() {
+        locationProvider.getLastLocation()
+                .subscribe(location -> {
+                    if (location != null) {
+                        Search search = new Search();
+                        search.setLatLon(location.getLatitude(), location.getLongitude());
+                        loadWeather(true, search);
+                    } else {
+                        // TODO maybe show error?
+                    }
+                });
+    }
+
+    @Override
+    public void doStringWeatherSeach(String searchStr) {
         if (searchStr == null || searchStr.isEmpty()) {
             // don't do anything if the EditText is empty
         } else {
-            if (!isFromRecentSearch) {
-                weatherRepository.saveRecentSearch(searchStr);
-                loadSearches();
+            Search search = new Search();
+            if (Search.determineSearchType(searchStr) == Search.SEARCH_TYPE_ZIPCODE) {
+                search.setZipCode(searchStr);
+            } else {
+                search.setSearchStr(searchStr);
             }
-            loadWeather(true, searchStr);
+            loadWeather(true, search);
         }
     }
 
@@ -80,7 +99,7 @@ public class WeatherPresenter implements Presenter {
                 .subscribe(searches -> {
                     if (!searches.isEmpty()) {
                         processSearches(searches);
-                        loadWeather(true, searches.get(0).getSearchStr());
+                        loadWeather(true, searches.get(0));
                     } else {
                         processEmptyWeather();
                     }
@@ -89,7 +108,7 @@ public class WeatherPresenter implements Presenter {
         subscriptions.add(subscription);
     }
 
-    private void loadWeather(boolean forceUpdate, String cityName) {
+    private void loadWeather(boolean forceUpdate, Search search) {
         weatherView.setLoadingIndicator(true);
 
         if (forceUpdate) {
@@ -98,11 +117,12 @@ public class WeatherPresenter implements Presenter {
 
         subscriptions.clear();
 
-        Subscription subscription = weatherRepository.getWeather(cityName)
+        Subscription subscription = weatherRepository.getWeather(search)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(weather -> {
                     // onNext
+                    loadSearches(); // refresh searches
                     processWeather(weather);
                 }, throwable -> {
                     // onError

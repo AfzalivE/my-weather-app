@@ -11,6 +11,7 @@ import com.afzaln.kijijiweather.data.Weather;
 import rx.Observable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import rx.Observable.Transformer;
 
 /**
  * Created by afzal on 2016-06-04.
@@ -24,7 +25,7 @@ public class WeatherRepository implements WeatherDataSource {
     /**
      * This variable has package local visibility so it can be accessed from tests.
      */
-    Map<String, Weather> cachedWeather;
+    Map<Search, Weather> cachedWeather;
 
     /**
      * Marks the cache as invalid, to force an update the next time data is requested. This variable
@@ -43,10 +44,11 @@ public class WeatherRepository implements WeatherDataSource {
      *
      * @param weatherRemoteDataSource the backend data source
      * @param weatherLocalDataSource  the device storage data source
+     *
      * @return the {@link WeatherRepository} instance
      */
     public static WeatherRepository getInstance(WeatherDataSource weatherRemoteDataSource,
-                                              WeatherDataSource weatherLocalDataSource) {
+                                                WeatherDataSource weatherLocalDataSource) {
         if (INSTANCE == null) {
             INSTANCE = new WeatherRepository(weatherRemoteDataSource, weatherLocalDataSource);
         }
@@ -61,31 +63,47 @@ public class WeatherRepository implements WeatherDataSource {
         INSTANCE = null;
     }
 
-
     /**
      * Gets weather from cache, or remote data source, whichever is
      * available first.
      */
     @Override
-    public Observable<Weather> getWeather(String cityName) {
+    public Observable<Weather> getWeather(Search search) {
+        Weather cachedWeather = checkCache(search);
+        if (cachedWeather != null) {
+            return Observable.just(cachedWeather);
+        }
+
+        return weatherRemoteDataSource
+                .getWeather(search)
+                .compose(saveSearch(search));
+    }
+
+    private Weather checkCache(Search search) {
         if (cachedWeather != null && !isCacheDirty) {
-            return Observable.just(cachedWeather.get(cityName));
+            return cachedWeather.get(search);
         } else if (cachedWeather == null) {
             cachedWeather = new LinkedHashMap<>();
         }
 
-        Observable<Weather> remoteWeather = weatherRemoteDataSource
-                .getWeather(cityName)
-                .doOnNext(weather -> {
+        return null;
+    }
+
+    Transformer<Weather, Weather> saveSearch(Search search) {
+        return weather -> weather
+                .doOnNext(weather1 -> {
+                    // set lat lon for hash code generation
+                    // and because they're required
+                    if (search.getSearchType() == Search.SEARCH_TYPE_COORDINATES) {
+                        search.setSearchStr(weather1.name);
+                    }
+                    search.setLatLon(weather1.coord.lat, weather1.coord.lon);
                     // cache this weather report
-                    cachedWeather.put(cityName, weather);
-                })
-                .doOnError(throwable -> {
-                    throwable.printStackTrace();
+                    this.cachedWeather.put(search, weather1);
+                    // save the search in the local database
+                    saveRecentSearch(search);
                 })
                 .doOnCompleted(() -> isCacheDirty = false);
-
-        return remoteWeather;
     }
 
     public void refreshWeather() {
@@ -93,7 +111,7 @@ public class WeatherRepository implements WeatherDataSource {
     }
 
     @Override
-    public void saveRecentSearch(String search) {
+    public void saveRecentSearch(Search search) {
         weatherLocalDataSource.saveRecentSearch(search);
     }
 

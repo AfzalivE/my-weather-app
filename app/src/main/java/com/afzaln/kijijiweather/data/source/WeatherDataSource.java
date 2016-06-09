@@ -10,9 +10,9 @@ import rx.Observable;
  * Created by afzal on 2016-06-04.
  */
 public interface WeatherDataSource {
+    Observable<Weather> getWeather(Search search);
     void deleteAllRecentSearches();
-    Observable<Weather> getWeather(String cityName);
-    void saveRecentSearch(String search);
+    void saveRecentSearch(Search search);
     Observable<? extends List<Search>> getRecentSearches();
     void deleteRecentSearch(long timestamp);
 }

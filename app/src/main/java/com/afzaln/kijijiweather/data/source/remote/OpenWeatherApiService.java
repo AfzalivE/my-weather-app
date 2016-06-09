@@ -11,5 +11,11 @@ import rx.Observable;
  */
 public interface OpenWeatherApiService {
     @GET("weather")
-    Observable<Weather> getWeather(@Query("q") String cityName);
+    Observable<Weather> getWeatherByCityName(@Query("q") String cityName);
+
+    @GET("weather")
+    Observable<Weather> getWeatherByCoordinates(@Query("lat") double lat, @Query("lon") double lon);
+
+    @GET("weather")
+    Observable<Weather> getWeatherByZipCode(@Query("zip") String zipCode);
 }

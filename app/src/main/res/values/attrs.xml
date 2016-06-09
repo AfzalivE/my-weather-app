@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr format="reference" name="floatingSearchViewStyle"/>
+    <attr format="reference" name="floatingSearchViewStyle" />
+    <declare-styleable name="WeatherInfoView">
+        <attr name="wiv_labelText" format="string" />
+        <attr name="wiv_icon" format="reference" />
+        <attr name="wiv_value" format="string" />
+    </declare-styleable>
 </resources>

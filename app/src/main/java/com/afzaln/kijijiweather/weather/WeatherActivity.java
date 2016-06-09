@@ -31,7 +31,7 @@ public class WeatherActivity extends BaseActivity {
         }
 
         // Create the presenter
-        weatherPresenter = new WeatherPresenter(Injection.provideWeatherRepository(getApplicationContext()), weatherFragment);
+        weatherPresenter = new WeatherPresenter(Injection.provideWeatherRepository(getApplicationContext()), Injection.provideLocationProvider(getApplicationContext()), weatherFragment);
 
         // do things with restoring instance state
         if (savedInstanceState != null) {

@@ -23,6 +23,7 @@ import com.afzaln.kijijiweather.data.source.WeatherRepository;
 import com.afzaln.kijijiweather.data.source.local.WeatherLocalDataSource;
 import com.afzaln.kijijiweather.data.source.remote.WeatherRemoteDataSource;
 
+import com.afzaln.kijijiweather.data.source.location.LocationProvider;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -36,5 +37,11 @@ public class Injection {
         checkNotNull(context);
         return WeatherRepository.getInstance(WeatherRemoteDataSource.getInstance(),
                 WeatherLocalDataSource.getInstance(context));
+    }
+
+    public static LocationProvider provideLocationProvider(@NonNull Context context) {
+        checkNotNull(context);
+        return LocationProvider.getInstance(context);
+
     }
 }

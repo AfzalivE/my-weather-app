@@ -22,7 +22,8 @@ public class WeatherContract {
     }
 
     interface Presenter extends BasePresenter {
-        void doWeatherSearch(String searchStr, boolean isFromRecentSearch);
+        void doCoordinatesWeatherSearch();
+        void doStringWeatherSeach(String searchStr);
         void deleteRecentSearch(@NonNull Search search);
     }
 }

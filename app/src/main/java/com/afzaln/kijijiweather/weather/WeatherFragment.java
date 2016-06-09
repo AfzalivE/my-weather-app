@@ -1,11 +1,19 @@
 package com.afzaln.kijijiweather.weather;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import android.Manifest.permission;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -16,16 +24,18 @@ import butterknife.BindView;
 import com.afzaln.kijijiweather.R;
 import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.Weather;
+import com.afzaln.kijijiweather.ui.WeatherInfoView;
 import com.afzaln.kijijiweather.util.BaseFragment;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.mypopsy.widget.FloatingSearchView;
 import timber.log.Timber;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by afzal on 2016-06-04.
  */
-public class WeatherFragment extends BaseFragment implements WeatherContract.View {
+public class WeatherFragment extends BaseFragment implements WeatherContract.View, OnRequestPermissionsResultCallback {
+    private static final int PERMISSION_REQUEST_CODE = 1;
+
     private WeatherContract.Presenter weatherPresenter;
 
     @BindView(R.id.search_view)
@@ -46,6 +56,21 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
     @BindView(R.id.weather_text)
     TextView weatherTextView;
 
+    @BindView(R.id.rain)
+    WeatherInfoView rainView;
+
+    @BindView(R.id.clouds)
+    WeatherInfoView cloudsView;
+
+    @BindView(R.id.wind)
+    WeatherInfoView windView;
+
+    @BindView(R.id.pressure)
+    WeatherInfoView pressureView;
+
+    @BindView(R.id.humidity)
+    WeatherInfoView humidityView;
+
     private SearchItemClickListener searchClickListener = new SearchItemClickListener() {
         @Override
         public void delete(Search search) {
@@ -58,7 +83,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
             mSearchView.setActivated(false);
             mSearchView.setText(search.getSearchStr());
             showProgressBar(true);
-            executeSearch(search.getSearchStr(), true);
+            doWeatherStringSearch(search.getSearchStr());
         }
     };
 
@@ -113,7 +138,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         mSearchView.setOnSearchListener(searchStr -> {
             mSearchView.setActivated(false);
             Timber.d("Searching for " + searchStr);
-            executeSearch(searchStr.toString(), false);
+            doWeatherStringSearch(searchStr.toString());
             showProgressBar(true);
         });
 
@@ -124,6 +149,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
                     break;
                 case R.id.location:
                     Timber.d("location input");
+                    doCoordinatesWeatherSearch();
                     break;
             }
             return true;
@@ -149,8 +175,45 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         });
     }
 
-    private void executeSearch(String searchStr, boolean isFromRecentSearch) {
-        weatherPresenter.doWeatherSearch(searchStr, isFromRecentSearch);
+    private void doCoordinatesWeatherSearch() {
+        if (ActivityCompat.checkSelfPermission(getActivity(), permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+            return;
+        }
+
+        LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        boolean gpsProviderEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean networkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        if (!gpsProviderEnabled && !networkProviderEnabled) {
+            // TODO show alert dialog to enable location services
+            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(myIntent);
+
+            return;
+        }
+
+        weatherPresenter.doCoordinatesWeatherSearch();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    weatherPresenter.doCoordinatesWeatherSearch();
+                } else {
+                    showPermissionDeniedDialog();
+                }
+                break;
+        }
+    }
+
+    private void showPermissionDeniedDialog() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    private void doWeatherStringSearch(String searchStr) {
+        weatherPresenter.doStringWeatherSeach(searchStr);
     }
 
     @Override
@@ -164,9 +227,15 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         emptyLayout.setVisibility(View.GONE);
         weatherLayout.setVisibility(View.VISIBLE);
 
-        cityView.setText(weather.name);
-        tempView.setText(String.valueOf(weather.main.temp));
+        cityView.setText(weather.name + ", " + weather.sys.country);
         weatherTextView.setText(weather.weather[0].description);
+
+        tempView.setText(getString(R.string.temp, weather.main.temp));
+        rainView.setValue(getString(R.string.rain, weather.rain.volume));
+        cloudsView.setValue(getString(R.string.clouds, weather.clouds.all));
+        windView.setValue(getString(R.string.wind, weather.wind.speed));
+        pressureView.setValue(getString(R.string.pressure, weather.main.pressure));
+        humidityView.setValue(getString(R.string.humidity, weather.main.humidity));
 
     }
 
