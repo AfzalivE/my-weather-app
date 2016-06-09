@@ -13,7 +13,7 @@ import com.afzaln.kijijiweather.data.Weather;
  * Created by afzal on 2016-06-04.
  */
 public class WeatherContract {
-    interface  View extends BaseView<Presenter> {
+    interface View extends BaseView<Presenter> {
         void setLoadingIndicator(boolean show);
         void showWeather(Weather weather);
         void showEmptyWeather();
@@ -21,7 +21,7 @@ public class WeatherContract {
         void populateRecentSearches(List<Search> searches);
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter<V> extends BasePresenter<V> {
         void doCoordinatesWeatherSearch();
         void doStringWeatherSeach(String searchStr);
         void deleteRecentSearch(@NonNull Search search);

@@ -1,5 +1,6 @@
 package com.afzaln.kijijiweather.weather;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.Manifest.permission;
@@ -8,15 +9,22 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.Settings;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,6 +34,7 @@ import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.ui.WeatherInfoView;
 import com.afzaln.kijijiweather.util.BaseFragment;
+import com.afzaln.kijijiweather.util.PresenterFactory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.mypopsy.widget.FloatingSearchView;
 import timber.log.Timber;
@@ -33,13 +42,18 @@ import timber.log.Timber;
 /**
  * Created by afzal on 2016-06-04.
  */
-public class WeatherFragment extends BaseFragment implements WeatherContract.View, OnRequestPermissionsResultCallback {
+public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContract.View> implements WeatherContract.View, OnRequestPermissionsResultCallback {
     private static final int PERMISSION_REQUEST_CODE = 1;
+    private static final int VOICE_SEARCH_REQUEST_CODE = 2;
+    private boolean onActivityResultCalled;
 
-    private WeatherContract.Presenter weatherPresenter;
+    private WeatherContract.Presenter<WeatherContract.View> weatherPresenter;
+
+    @BindView(R.id.root)
+    FrameLayout rootView;
 
     @BindView(R.id.search_view)
-    FloatingSearchView mSearchView;
+    FloatingSearchView searchView;
 
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
@@ -70,7 +84,6 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
 
     @BindView(R.id.humidity)
     WeatherInfoView humidityView;
-
     private SearchItemClickListener searchClickListener = new SearchItemClickListener() {
         @Override
         public void delete(Search search) {
@@ -80,8 +93,8 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         @Override
         public void search(Search search) {
             Timber.d("Searched for %s", search.getSearchStr());
-            mSearchView.setActivated(false);
-            mSearchView.setText(search.getSearchStr());
+            searchView.setActivated(false);
+            searchView.setText(search.getSearchStr());
             showProgressBar(true);
             doWeatherStringSearch(search.getSearchStr());
         }
@@ -104,14 +117,29 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
 
     @Override
     public void onResume() {
-        super.onResume();
-        weatherPresenter.subscribe();
+        if (!onActivityResultCalled) {
+            super.onResume();
+        } else {
+            // don't autoload the last weather
+            // because this is after onActivityResult called
+            // from the voice input
+            super.onResume(false);
+        }
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        weatherPresenter.unsubscribe();
+    protected String tag() {
+        return WeatherFragment.class.getName();
+    }
+
+    @Override
+    protected PresenterFactory<WeatherPresenter> getPresenterFactory() {
+        return new WeatherPresenterFactory(tag());
+    }
+
+    @Override
+    protected void onPresenterPrepared(WeatherPresenter presenter) {
+        this.weatherPresenter = presenter;
     }
 
     @Override
@@ -129,23 +157,24 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
     }
 
     private void initSearchView(SearchAdapter adapter) {
-        mSearchView.showIcon(shouldShowNavigationIcon());
+        searchView.showIcon(shouldShowNavigationIcon());
 
-        mSearchView.setAdapter(adapter);
-        EditText searchEditText = (EditText) mSearchView.findViewById(R.id.fsv_search_text);
+        searchView.setAdapter(adapter);
+        EditText searchEditText = (EditText) searchView.findViewById(R.id.fsv_search_text);
         searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 
-        mSearchView.setOnSearchListener(searchStr -> {
-            mSearchView.setActivated(false);
+        searchView.setOnSearchListener(searchStr -> {
+            searchView.setActivated(false);
             Timber.d("Searching for " + searchStr);
             doWeatherStringSearch(searchStr.toString());
             showProgressBar(true);
         });
 
-        mSearchView.setOnMenuItemClickListener(item -> {
+        searchView.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case R.id.voice:
                     Timber.d("Voice input");
+                    doVoiceSearch();
                     break;
                 case R.id.location:
                     Timber.d("location input");
@@ -155,24 +184,43 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
             return true;
         });
 
-        mSearchView.setOnSearchFocusChangedListener(focused -> {
-            boolean textEmpty = mSearchView.getText().length() == 0;
+        searchView.setOnSearchFocusChangedListener(focused -> {
+            boolean textEmpty = searchView.getText().length() == 0;
 
             if (!focused) {
                 showProgressBar(false);
             }
-            mSearchView.showLogo(!focused && textEmpty);
+            searchView.showLogo(!focused && textEmpty);
 
             if (focused) {
-                mSearchView.showIcon(true);
+                searchView.showIcon(true);
             } else {
-                mSearchView.showIcon(shouldShowNavigationIcon());
+                searchView.showIcon(shouldShowNavigationIcon());
             }
         });
 
-        mSearchView.setOnIconClickListener(() -> {
-            mSearchView.setActivated(!mSearchView.isActivated());
+        searchView.setOnIconClickListener(() -> {
+            searchView.setActivated(!searchView.isActivated());
         });
+    }
+
+    private void doVoiceSearch() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        startActivityForResult(intent, VOICE_SEARCH_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        onActivityResultCalled = true;
+        if (requestCode == VOICE_SEARCH_REQUEST_CODE && data != null) {
+            ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (results.size() > 0) {
+                doWeatherStringSearch(results.get(0));
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void doCoordinatesWeatherSearch() {
@@ -186,7 +234,7 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         boolean networkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         if (!gpsProviderEnabled && !networkProviderEnabled) {
             // TODO show alert dialog to enable location services
-            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(myIntent);
 
             return;
@@ -221,11 +269,24 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         showProgressBar(show);
     }
 
+    private AnimationSet getAnimationSet() {
+        AlphaAnimation alpha = new AlphaAnimation(0.8f, 1.0f);
+        alpha.setFillAfter(true);
+        TranslateAnimation slide = new TranslateAnimation(0f, 0f, 100f, 0);
+        slide.setFillAfter(true);
+
+        AnimationSet set = new AnimationSet(true);
+        set.setDuration(350);
+        set.setInterpolator(new DecelerateInterpolator());
+        set.addAnimation(alpha);
+        set.addAnimation(slide);
+
+        return set;
+    }
+
     @Override
     public void showWeather(Weather weather) {
         Timber.d("Showing weather for: " + weather.name);
-        emptyLayout.setVisibility(View.GONE);
-        weatherLayout.setVisibility(View.VISIBLE);
 
         cityView.setText(weather.name + ", " + weather.sys.country);
         weatherTextView.setText(weather.weather[0].description);
@@ -237,13 +298,49 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
         pressureView.setValue(getString(R.string.pressure, weather.main.pressure));
         humidityView.setValue(getString(R.string.humidity, weather.main.humidity));
 
+//        AnimationSet animationSet = getAnimationSet();
+//        weatherLayout.startAnimation(animationSet);
+//        animationSet.setAnimationListener(new AnimationListener() {
+//            @Override
+//            public void onAnimationStart(Animation animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animation animation) {
+                emptyLayout.setVisibility(View.GONE);
+                weatherLayout.setVisibility(View.VISIBLE);
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animation animation) {
+//
+//            }
+//        });
     }
 
     @Override
     public void showEmptyWeather() {
         Timber.d("Showing empty weather");
-        emptyLayout.setVisibility(View.VISIBLE);
-        weatherLayout.setVisibility(View.GONE);
+//        AnimationSet animationSet = getAnimationSet();
+//        emptyLayout.startAnimation(animationSet);
+//        animationSet.setAnimationListener(new AnimationListener() {
+//            @Override
+//            public void onAnimationStart(Animation animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animation animation) {
+                emptyLayout.setVisibility(View.VISIBLE);
+                weatherLayout.setVisibility(View.GONE);
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animation animation) {
+//
+//            }
+//        });
     }
 
     @Override
@@ -258,11 +355,11 @@ public class WeatherFragment extends BaseFragment implements WeatherContract.Vie
     }
 
     private void showProgressBar(boolean show) {
-        mSearchView.getMenu().findItem(R.id.menu_progress).setVisible(show);
+        searchView.getMenu().findItem(R.id.menu_progress).setVisible(show);
     }
 
     private boolean shouldShowNavigationIcon() {
-        return mSearchView.isActivated();
+        return searchView.isActivated();
     }
 
     @Override

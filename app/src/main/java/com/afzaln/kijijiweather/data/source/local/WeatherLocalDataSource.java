@@ -10,6 +10,7 @@ import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.data.source.WeatherDataSource;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 import io.realm.Sort;
 import rx.Observable;
 
@@ -64,7 +65,9 @@ public class WeatherLocalDataSource implements WeatherDataSource {
 
     @Override
     public Observable<? extends List<Search>> getRecentSearches() {
-        return getRealm().where(Search.class).findAll().sort("timestamp", Sort.DESCENDING).asObservable();
+        RealmResults<Search> timestamp = getRealm().where(Search.class).findAllSorted("timestamp", Sort.DESCENDING);
+
+        return Observable.just(getRealm().copyFromRealm(timestamp));
     }
 
     @Override

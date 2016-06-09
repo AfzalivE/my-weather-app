@@ -19,29 +19,45 @@ import rx.subscriptions.CompositeSubscription;
 /**
  * Created by afzal on 2016-06-04.
  */
-public class WeatherPresenter implements Presenter {
+public class WeatherPresenter implements Presenter<WeatherContract.View> {
+    private final String title;
     private final WeatherRepository weatherRepository;
-    private final WeatherContract.View weatherView;
+    private WeatherContract.View weatherView;
     private final LocationProvider locationProvider;
-
     private CompositeSubscription subscriptions;
 
-    public WeatherPresenter(@NonNull WeatherRepository weatherRepository, LocationProvider locationProvider, @NonNull View weatherView) {
+    private Weather lastWeather;
+
+    public WeatherPresenter(String title, @NonNull WeatherRepository weatherRepository, LocationProvider locationProvider) {
+        this.title = title;
         this.weatherRepository = checkNotNull(weatherRepository);
         this.locationProvider = checkNotNull(locationProvider);
-        this.weatherView = checkNotNull(weatherView, "weatherView cannot be null");
-        weatherView.setPresenter(this);
         subscriptions = new CompositeSubscription();
     }
 
     @Override
-    public void subscribe() {
-        loadSearchesAndLastWeather();
+    public void onViewAttached(View view) {
+        onViewAttached(view, true);
     }
 
     @Override
-    public void unsubscribe() {
+    public void onViewAttached(View view, boolean load) {
+        weatherView = view;
+        if (load) {
+            if (lastWeather != null) {
+                processWeather(lastWeather);
+            }
+            loadSearchesAndLastWeather();
+        }
+    }
+
+    public void onViewDetached() {
+        weatherView = null;
         subscriptions.clear();
+    }
+
+    public void onDestroyed() {
+        // nothing to clean up
     }
 
     @Override
@@ -109,7 +125,9 @@ public class WeatherPresenter implements Presenter {
     }
 
     private void loadWeather(boolean forceUpdate, Search search) {
-        weatherView.setLoadingIndicator(true);
+        if (weatherView != null) {
+            weatherView.setLoadingIndicator(true);
+        }
 
         if (forceUpdate) {
             weatherRepository.refreshWeather();
@@ -124,6 +142,7 @@ public class WeatherPresenter implements Presenter {
                     // onNext
                     loadSearches(); // refresh searches
                     processWeather(weather);
+                    lastWeather = weather;
                 }, throwable -> {
                     // onError
                     processError(throwable);
@@ -136,21 +155,29 @@ public class WeatherPresenter implements Presenter {
     }
 
     private void processSearches(List<Search> searches) {
-        weatherView.populateRecentSearches(searches);
+        if (weatherView != null) {
+            weatherView.populateRecentSearches(searches);
+        }
     }
 
     private void processEmptyWeather() {
-        weatherView.showEmptyWeather();
-        weatherView.setLoadingIndicator(false);
+        if (weatherView != null) {
+            weatherView.showEmptyWeather();
+            weatherView.setLoadingIndicator(false);
+        }
     }
 
     private void processWeather(Weather weather) {
-        weatherView.showWeather(weather);
-        weatherView.setLoadingIndicator(false);
+        if (weatherView != null) {
+            weatherView.showWeather(weather);
+            weatherView.setLoadingIndicator(false);
+        }
     }
 
     private void processError(Throwable throwable) {
-        weatherView.showError(throwable.getMessage());
-        weatherView.setLoadingIndicator(false);
+        if (weatherView != null) {
+            weatherView.showError(throwable.getMessage());
+            weatherView.setLoadingIndicator(false);
+        }
     }
 }

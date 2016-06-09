@@ -76,7 +76,10 @@ public class WeatherRepository implements WeatherDataSource {
 
         return weatherRemoteDataSource
                 .getWeather(search)
-                .compose(saveSearch(search));
+                .compose(saveSearch(search))
+                .doOnError(throwable -> {
+                    throwable.printStackTrace();
+                });
     }
 
     private Weather checkCache(Search search) {

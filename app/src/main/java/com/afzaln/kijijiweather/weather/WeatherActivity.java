@@ -3,7 +3,6 @@ package com.afzaln.kijijiweather.weather;
 import android.os.Bundle;
 
 import butterknife.ButterKnife;
-import com.afzaln.kijijiweather.Injection;
 import com.afzaln.kijijiweather.R;
 import com.afzaln.kijijiweather.util.BaseActivity;
 
@@ -12,7 +11,7 @@ import com.afzaln.kijijiweather.util.BaseActivity;
  */
 public class WeatherActivity extends BaseActivity {
 
-    WeatherPresenter weatherPresenter;
+    private WeatherFragment weatherFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +19,7 @@ public class WeatherActivity extends BaseActivity {
         setContentView(R.layout.weather_activity);
         ButterKnife.bind(this);
 
-        WeatherFragment weatherFragment = (WeatherFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        weatherFragment = (WeatherFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
 
         if (weatherFragment == null) {
             // Create the fragment
@@ -29,19 +28,5 @@ public class WeatherActivity extends BaseActivity {
                     .replace(R.id.content_frame, weatherFragment)
                     .commit();
         }
-
-        // Create the presenter
-        weatherPresenter = new WeatherPresenter(Injection.provideWeatherRepository(getApplicationContext()), Injection.provideLocationProvider(getApplicationContext()), weatherFragment);
-
-        // do things with restoring instance state
-        if (savedInstanceState != null) {
-
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        // do things with saving instance state
-        super.onSaveInstanceState(outState);
     }
 }

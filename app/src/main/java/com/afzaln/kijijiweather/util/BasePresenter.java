@@ -16,10 +16,9 @@
 
 package com.afzaln.kijijiweather.util;
 
-public interface BasePresenter {
-
-    void subscribe();
-
-    void unsubscribe();
-
+public interface BasePresenter<V> {
+    void onViewAttached(V view);
+    void onViewAttached(V view, boolean autoLoad);
+    void onViewDetached();
+    void onDestroyed();
 }

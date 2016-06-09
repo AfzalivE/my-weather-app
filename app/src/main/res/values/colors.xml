@@ -21,8 +21,4 @@
     <color name="bg">#FF37BC9B</color>
     <color name="bg_light">#FF48CFAD</color>
 
-    <drawable name="completedTaskBackground">#CCCCCC</drawable>
-
-    <drawable name="touchFeedback">#CFD8DC</drawable>
-
 </resources>

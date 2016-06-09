@@ -4,17 +4,28 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
+import com.afzaln.kijijiweather.data.Weather;
 
 /**
  * Created by afzal on 2016-06-04.
  */
-public class BaseFragment extends Fragment {
+public abstract class BaseFragment<P extends BasePresenter<V>, V> extends Fragment {
+
+    private static final int LOADER_ID = 101;
+
+    // boolean flag to avoid delivering the result twice. Calling initLoader in onActivityCreated makes
+    // onLoadFinished will be called twice during configuration change.
+    private boolean delivered = false;
+
+    private BasePresenter<V> presenter;
 
     @Nullable
     @Override
@@ -35,5 +46,63 @@ public class BaseFragment extends Fragment {
         Bundle args = new Bundle();
         args.putInt("layout", layout);
         setArguments(args);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        getLoaderManager().initLoader(LOADER_ID, null, new LoaderManager.LoaderCallbacks<P>() {
+            @Override
+            public Loader<P> onCreateLoader(int id, Bundle args) {
+                return new PresenterLoader<>(getContext(), getPresenterFactory(), tag());
+            }
+
+            @Override
+            public void onLoadFinished(Loader<P> loader, P presenter) {
+                if (!delivered) {
+                    BaseFragment.this.presenter = presenter;
+                    delivered = true;
+                    onPresenterPrepared(presenter);
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<P> loader) {
+                BaseFragment.this.presenter = null;
+                onPresenterDestroyed();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        onResume(true);
+    }
+
+    public void onResume(boolean autoLoad) {
+        super.onResume();
+        presenter.onViewAttached(getPresenterView(), autoLoad);
+    }
+
+    @Override
+    public void onPause() {
+        presenter.onViewDetached();
+        super.onPause();
+    }
+
+    protected abstract String tag();
+
+    protected abstract PresenterFactory<P> getPresenterFactory();
+
+    protected void onPresenterDestroyed() {
+        // hook for subclasses
+    }
+
+    protected abstract void onPresenterPrepared(P presenter);
+
+    // Override in case of fragment not implementing Presenter<View> interface
+    private V getPresenterView() {
+        return (V) this;
     }
 }
