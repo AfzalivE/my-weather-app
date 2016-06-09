@@ -65,9 +65,9 @@ public class WeatherLocalDataSource implements WeatherDataSource {
 
     @Override
     public Observable<? extends List<Search>> getRecentSearches() {
-        RealmResults<Search> timestamp = getRealm().where(Search.class).findAllSorted("timestamp", Sort.DESCENDING);
+        RealmResults<Search> searches = getRealm().where(Search.class).findAllSorted("timestamp", Sort.DESCENDING);
 
-        return Observable.just(getRealm().copyFromRealm(timestamp));
+        return Observable.just(getRealm().copyFromRealm(searches));
     }
 
     @Override

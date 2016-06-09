@@ -12,7 +12,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
-import com.afzaln.kijijiweather.data.Weather;
 
 /**
  * Created by afzal on 2016-06-04.

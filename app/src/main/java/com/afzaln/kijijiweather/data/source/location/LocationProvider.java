@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
+import com.afzaln.kijijiweather.weather.WeatherPresenter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -22,6 +23,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import rx.Observable;
 import rx.Subscriber;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -51,7 +53,8 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
     }
 
     public Observable<Location> getLastLocation() {
-        return Observable.create(subscriber -> {
+        return Observable.<Location>create(subscriber -> {
+            Timber.d("Observable creation: " + Thread.currentThread().getName());
             this.subscriber = subscriber;
             if (!googleApiClient.isConnected()) {
                 googleApiClient.connect();
@@ -75,6 +78,7 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
         Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (null != currentLocation) {
             if (subscriber != null && !subscriber.isUnsubscribed()) {
+                Timber.d("Observable onNext: " + Thread.currentThread().getName());
                 subscriber.onNext(currentLocation);
             }
         } else {
@@ -82,6 +86,7 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     if (subscriber != null && !subscriber.isUnsubscribed()) {
+                        Timber.d("Observable onNext: " + Thread.currentThread().getName());
                         subscriber.onNext(locationResult.getLastLocation());
                     }
                     LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);

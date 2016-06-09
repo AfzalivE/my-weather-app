@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.Manifest.permission;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import android.support.v4.app.NotificationCompat.WearableExtender;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -285,8 +288,10 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     }
 
     @Override
-    public void showWeather(Weather weather) {
+    public void showWeather(Weather weather, boolean animate) {
         Timber.d("Showing weather for: " + weather.name);
+        searchView.setText(weather.name);
+        searchView.setActivated(false);
 
         cityView.setText(weather.name + ", " + weather.sys.country);
         weatherTextView.setText(weather.weather[0].description);
@@ -298,30 +303,31 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         pressureView.setValue(getString(R.string.pressure, weather.main.pressure));
         humidityView.setValue(getString(R.string.humidity, weather.main.humidity));
 
-//        AnimationSet animationSet = getAnimationSet();
-//        weatherLayout.startAnimation(animationSet);
-//        animationSet.setAnimationListener(new AnimationListener() {
-//            @Override
-//            public void onAnimationStart(Animation animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animation animation) {
-                emptyLayout.setVisibility(View.GONE);
-                weatherLayout.setVisibility(View.VISIBLE);
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animation animation) {
-//
-//            }
-//        });
+        if (animate) {
+            weatherLayout.setAlpha(0.5f);
+            weatherLayout.setTranslationY(60);
+
+            weatherLayout.animate()
+                    .alpha(1.0f)
+                    .translationY(0)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            weatherLayout.setVisibility(View.VISIBLE);
+                            emptyLayout.setVisibility(View.GONE);
+                        }
+                    });
+        } else {
+            weatherLayout.setVisibility(View.VISIBLE);
+            emptyLayout.setVisibility(View.GONE);
+        }
     }
 
     @Override
     public void showEmptyWeather() {
         Timber.d("Showing empty weather");
+
 //        AnimationSet animationSet = getAnimationSet();
 //        emptyLayout.startAnimation(animationSet);
 //        animationSet.setAnimationListener(new AnimationListener() {
@@ -332,8 +338,8 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
 //
 //            @Override
 //            public void onAnimationEnd(Animation animation) {
-                emptyLayout.setVisibility(View.VISIBLE);
-                weatherLayout.setVisibility(View.GONE);
+        emptyLayout.setVisibility(View.VISIBLE);
+        weatherLayout.setVisibility(View.GONE);
 //            }
 //
 //            @Override

@@ -95,11 +95,9 @@ public class WeatherRepository implements WeatherDataSource {
     Transformer<Weather, Weather> saveSearch(Search search) {
         return weather -> weather
                 .doOnNext(weather1 -> {
+                    search.setSearchStr(weather1.name);
                     // set lat lon for hash code generation
                     // and because they're required
-                    if (search.getSearchType() == Search.SEARCH_TYPE_COORDINATES) {
-                        search.setSearchStr(weather1.name);
-                    }
                     search.setLatLon(weather1.coord.lat, weather1.coord.lon);
                     // cache this weather report
                     this.cachedWeather.put(search, weather1);
