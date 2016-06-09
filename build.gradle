@@ -49,6 +49,7 @@ ext {
     retrofitLoggingVersion = '3.3.1'
     powermockVersion = '1.6.5'
     floatingSearchViewVersion = 'master-SNAPSHOT'
+    toggleDrawableVersion = '1.0.1'
 
     // test dependencies
     junitVersion = '4.12'

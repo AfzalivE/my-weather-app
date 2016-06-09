@@ -36,6 +36,7 @@ import com.afzaln.kijijiweather.util.BaseFragment;
 import com.afzaln.kijijiweather.util.PresenterFactory;
 import com.afzaln.kijijiweather.util.ResourceUtils;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.mypopsy.drawable.SearchArrowDrawable;
 import com.mypopsy.widget.FloatingSearchView;
 import timber.log.Timber;
 
@@ -159,11 +160,11 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     }
 
     private void initSearchView(SearchAdapter adapter) {
-        searchView.showIcon(shouldShowNavigationIcon());
+        searchView.showIcon(true);
 
         searchView.setAdapter(adapter);
         EditText searchEditText = (EditText) searchView.findViewById(R.id.fsv_search_text);
-        searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
         searchView.setOnSearchListener(searchStr -> {
             searchView.setActivated(false);
@@ -194,13 +195,10 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
             }
             searchView.showLogo(!focused && textEmpty);
 
-            if (focused) {
-                searchView.showIcon(true);
-            } else {
-                searchView.showIcon(shouldShowNavigationIcon());
-            }
+            searchView.showIcon(true);
         });
 
+        searchView.setIcon(new SearchArrowDrawable(getContext()));
         searchView.setOnIconClickListener(() -> {
             searchView.setActivated(!searchView.isActivated());
         });
