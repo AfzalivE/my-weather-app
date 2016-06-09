@@ -13,6 +13,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -68,17 +69,28 @@ public class WeatherRemoteDataSource implements WeatherDataSource {
 
     @Override
     public Observable<Weather> getWeather(Search search) {
-        Observable<Weather> weatherObservable;
+        Observable<Response<Weather>> responseObservable;
 
         if (search.getSearchType() == Search.SEARCH_TYPE_COORDINATES) {
-            weatherObservable = weatherApiService.getWeatherByCoordinates(search.getLat(), search.getLon());
+            responseObservable = weatherApiService.getWeatherByCoordinates(search.getLat(), search.getLon());
         } else if (search.getSearchType() == Search.SEARCH_TYPE_ZIPCODE) {
-            weatherObservable = weatherApiService.getWeatherByZipCode(search.getZipCode());
+            responseObservable= weatherApiService.getWeatherByZipCode(search.getZipCode());
         } else {
-            weatherObservable = weatherApiService.getWeatherByCityName(search.getSearchStr());
+            responseObservable = weatherApiService.getWeatherByCityName(search.getSearchStr());
         }
 
-        return weatherObservable.compose(formatWeather());
+        return responseObservable
+                .map(response -> {
+                    Weather weather = response.body();
+                    if (weather.coord == null) {
+                        if (weather.message.contains("Not found city")) {
+                            weather.message = "City not found, please try again.";
+                        }
+                        throw new NullPointerException(weather.message);
+                    }
+                    return weather;
+                })
+                .compose(formatWeather());
 
     }
 

@@ -14,7 +14,7 @@
 
         <ImageView
             android:id="@+id/info_icon"
-            android:src="@drawable/empty_weather"
+            android:src="@drawable/ic_01d"
             android:layout_gravity="top|center_horizontal"
             android:layout_width="56dp"
             android:layout_height="56dp" />

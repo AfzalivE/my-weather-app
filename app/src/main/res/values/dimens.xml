@@ -19,7 +19,7 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="list_item_padding">8dp</dimen>
-
-
+    <dimen name="info_container_paddingTop">36dp</dimen>
+    <dimen name="description_container_padding">24dp</dimen>
+    <dimen name="city_name_textSize">48sp</dimen>
 </resources>

@@ -49,16 +49,19 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         if (load) {
             if (lastViewState != null) {
                 updateView(lastViewState, false);
+            } else {
+                doLastWeatherSearch();
             }
-            doLastWeatherSearch();
         }
     }
 
+    @Override
     public void onViewDetached() {
         weatherView = null;
         subscriptions.clear();
     }
 
+    @Override
     public void onDestroyed() {
         // nothing to clean up
     }
@@ -80,52 +83,51 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                     }
                 })
                 .compose(loadWeather(true))
-                .compose(updateSearches())
+                .compose(loadSearches())
                 .compose(applySchedulers());
 
         updateView(weatherObservable);
     }
 
     @Override
-    public void doStringWeatherSeach(String searchStr) {
+    public void doStringWeatherSeach(String searchStr, String isoCountryCode) {
         if (searchStr == null || searchStr.isEmpty()) {
             // don't do anything if the EditText is empty
         } else {
             Search search = new Search();
             if (Search.determineSearchType(searchStr) == Search.SEARCH_TYPE_ZIPCODE) {
+                // check for country code presence
+                if (!searchStr.contains(",")) {
+                    searchStr = searchStr + ", " + isoCountryCode;
+                }
                 search.setZipCode(searchStr);
             } else {
                 search.setSearchStr(searchStr);
             }
             Observable<ViewState> stateObservable = Observable.just(search)
                     .compose(loadWeather(true))
-                    .compose(updateSearches())
+                    .compose(loadSearches())
                     .compose(applySchedulers());
 
             updateView(stateObservable);
         }
     }
 
-    public void doLastWeatherSearch() {
+    private void doLastWeatherSearch() {
         Observable<ViewState> stateObservable = weatherRepository.getRecentSearches()
                 .map(searches -> {
                     if (!searches.isEmpty()) {
                         return searches.get(0);
                     } else {
+                        // if this is null then empty weather will be shown
                         return null;
                     }
                 })
                 .compose(loadWeather(true))
-                .compose(updateSearches())
+                .compose(loadSearches())
                 .compose(applySchedulers());
 
         updateView(stateObservable);
-    }
-
-    private Transformer<Weather, ViewState> updateSearches() {
-        return weatherObservable -> weatherObservable
-                .flatMap(weather -> weatherRepository.getRecentSearches()
-                        .map(searches -> new ViewState(weather, searches)));
     }
 
     Transformer<Search, Weather> loadWeather(boolean forceUpdate) {
@@ -143,6 +145,18 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                 });
     }
 
+    private Transformer<Weather, ViewState> loadSearches() {
+        return weatherObservable -> weatherObservable
+                .flatMap(weather -> weatherRepository.getRecentSearches()
+                        .map(searches -> new ViewState(weather, searches)));
+    }
+
+    public static <T> Transformer<T, T> applySchedulers() {
+        return observable -> observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
     private void updateView(ViewState viewState, boolean animate) {
         updateViewSearches(viewState.searches);
         if (viewState.weather == null) {
@@ -152,13 +166,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         }
     }
 
-    public static <T> Transformer<T, T> applySchedulers() {
-        return observable -> observable
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    public Subscription updateView(Observable<ViewState> observable) {
+    private Subscription updateView(Observable<ViewState> observable) {
         return observable
                 .subscribe(viewState -> {
                     // onNext
@@ -169,7 +177,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                     showError(throwable);
                 }, () -> {
                     // onCompleted
-                    weatherView.setLoadingIndicator(false);
+                    weatherView.showProgressBar(false);
                 });
     }
 
@@ -195,25 +203,24 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     private void showEmptyWeather() {
         if (weatherView != null) {
             weatherView.showEmptyWeather();
-            weatherView.setLoadingIndicator(false);
+            weatherView.showProgressBar(false);
         }
     }
 
     private void updateViewWeather(Weather weather, boolean animate) {
         if (weatherView != null) {
             weatherView.showWeather(weather, animate);
-            weatherView.setLoadingIndicator(false);
+            weatherView.showProgressBar(false);
         }
     }
 
     private void showError(Throwable throwable) {
         if (weatherView != null) {
             weatherView.showError(throwable.getMessage());
-            weatherView.setLoadingIndicator(false);
         }
     }
 
-    public static class ViewState {
+    private static class ViewState {
         List<Search> searches;
         Weather weather;
 

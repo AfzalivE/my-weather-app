@@ -14,7 +14,7 @@ import com.afzaln.kijijiweather.data.Weather;
  */
 public class WeatherContract {
     interface View extends BaseView<Presenter> {
-        void setLoadingIndicator(boolean show);
+        void showProgressBar(boolean show);
         void showWeather(Weather weather, boolean animate);
         void showEmptyWeather();
         void showError(String message);
@@ -23,7 +23,7 @@ public class WeatherContract {
 
     interface Presenter<V> extends BasePresenter<V> {
         void doCoordinatesWeatherSearch();
-        void doStringWeatherSeach(String searchStr);
+        void doStringWeatherSeach(String searchStr, String isoCountryCode);
         void deleteRecentSearch(@NonNull Search search);
     }
 }

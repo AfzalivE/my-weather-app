@@ -19,6 +19,7 @@ public final class Weather {
     public long id;
     public String name;
     public long cod;
+    public String message; // for server error messages
 
     public static final class Coord {
         public double lon;

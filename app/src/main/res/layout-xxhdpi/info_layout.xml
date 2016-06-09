@@ -9,14 +9,14 @@
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/info_icon"
-            android:src="@drawable/empty_weather"
+            android:src="@drawable/ic_01d"
             android:layout_gravity="center"
-            android:layout_width="56dp"
-            android:layout_height="56dp" />
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
 
         <TextView
             android:id="@+id/info_label"

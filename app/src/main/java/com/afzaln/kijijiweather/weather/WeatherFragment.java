@@ -15,22 +15,18 @@ import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
-import android.support.v4.app.NotificationCompat.WearableExtender;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import butterknife.BindString;
 import butterknife.BindView;
 import com.afzaln.kijijiweather.R;
 import com.afzaln.kijijiweather.data.Search;
@@ -38,6 +34,7 @@ import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.ui.WeatherInfoView;
 import com.afzaln.kijijiweather.util.BaseFragment;
 import com.afzaln.kijijiweather.util.PresenterFactory;
+import com.afzaln.kijijiweather.util.ResourceUtils;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.mypopsy.widget.FloatingSearchView;
 import timber.log.Timber;
@@ -67,6 +64,9 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     @BindView(R.id.city)
     TextView cityView;
 
+    @BindView(R.id.weather_icon)
+    ImageView weatherIconView;
+
     @BindView(R.id.temp)
     TextView tempView;
 
@@ -87,6 +87,10 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
 
     @BindView(R.id.humidity)
     WeatherInfoView humidityView;
+
+    @BindString(R.string.country_code)
+    String countryCode;
+
     private SearchItemClickListener searchClickListener = new SearchItemClickListener() {
         @Override
         public void delete(Search search) {
@@ -150,11 +154,6 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         super.onViewCreated(view, savedInstanceState);
 
         searchAdapter = new SearchAdapter(searchClickListener);
-//        ArrayList<Search> searches = new ArrayList<>();
-//        searches.add(new Search("Toronto, Canada"));
-//        searches.add(new Search("Portland, United States"));
-//        searches.add(new Search("London, United Kingdom"));
-//        searchAdapter.setSearches(searches);
 
         initSearchView(searchAdapter);
     }
@@ -264,27 +263,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     }
 
     private void doWeatherStringSearch(String searchStr) {
-        weatherPresenter.doStringWeatherSeach(searchStr);
-    }
-
-    @Override
-    public void setLoadingIndicator(boolean show) {
-        showProgressBar(show);
-    }
-
-    private AnimationSet getAnimationSet() {
-        AlphaAnimation alpha = new AlphaAnimation(0.8f, 1.0f);
-        alpha.setFillAfter(true);
-        TranslateAnimation slide = new TranslateAnimation(0f, 0f, 100f, 0);
-        slide.setFillAfter(true);
-
-        AnimationSet set = new AnimationSet(true);
-        set.setDuration(350);
-        set.setInterpolator(new DecelerateInterpolator());
-        set.addAnimation(alpha);
-        set.addAnimation(slide);
-
-        return set;
+        weatherPresenter.doStringWeatherSeach(searchStr, countryCode);
     }
 
     @Override
@@ -302,6 +281,12 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         windView.setValue(getString(R.string.wind, weather.wind.speed));
         pressureView.setValue(getString(R.string.pressure, weather.main.pressure));
         humidityView.setValue(getString(R.string.humidity, weather.main.humidity));
+
+        String iconName = "ic_" + weather.weather[0].icon;
+        int drawableId = ResourceUtils.getDrawableIdByName(iconName);
+        if (drawableId != 0) {
+            weatherIconView.setImageDrawable(getResources().getDrawable(drawableId));
+        }
 
         if (animate) {
             weatherLayout.setAlpha(0.5f);
@@ -327,31 +312,16 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     @Override
     public void showEmptyWeather() {
         Timber.d("Showing empty weather");
-
-//        AnimationSet animationSet = getAnimationSet();
-//        emptyLayout.startAnimation(animationSet);
-//        animationSet.setAnimationListener(new AnimationListener() {
-//            @Override
-//            public void onAnimationStart(Animation animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animation animation) {
         emptyLayout.setVisibility(View.VISIBLE);
         weatherLayout.setVisibility(View.GONE);
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animation animation) {
-//
-//            }
-//        });
     }
 
     @Override
     public void showError(String message) {
         Timber.d("Error occurred: " + message);
+        searchView.setActivated(false);
+        showProgressBar(false);
+        Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -360,7 +330,8 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         searchAdapter.setSearches(searches);
     }
 
-    private void showProgressBar(boolean show) {
+    @Override
+    public void showProgressBar(boolean show) {
         searchView.getMenu().findItem(R.id.menu_progress).setVisible(show);
     }
 

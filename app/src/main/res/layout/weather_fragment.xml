@@ -48,6 +48,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/bg"
+        tools:visibility="visible"
         android:visibility="gone">
 
         <TextView
@@ -56,7 +57,7 @@
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:textSize="48sp"
+            android:textSize="@dimen/city_name_textSize"
             android:text="Toronto"
             android:textStyle="bold"
             android:fontFamily="sans-serif-condensed"
@@ -72,10 +73,11 @@
             android:layout_height="wrap_content">
 
             <ImageView
-                android:src="@drawable/empty_weather"
+                android:id="@+id/weather_icon"
+                android:src="@drawable/ic_01d"
                 android:layout_width="84dp"
                 android:layout_weight="1"
-                android:layout_height="102dp" />
+                android:layout_height="84dp" />
 
             <TextView
                 android:id="@+id/temp"
@@ -94,8 +96,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:paddingTop="24dp"
-            android:paddingBottom="24dp"
+            android:paddingTop="@dimen/description_container_padding"
+            android:paddingBottom="@dimen/description_container_padding"
             android:background="@color/bg_light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -125,6 +127,7 @@
 
         <LinearLayout
             android:gravity="center_horizontal|bottom"
+            android:paddingTop="@dimen/info_container_paddingTop"
             android:paddingBottom="16dp"
             android:orientation="horizontal"
             android:paddingEnd="16dp"
@@ -136,7 +139,7 @@
             <com.afzaln.kijijiweather.ui.WeatherInfoView
                 android:id="@+id/rain"
                 android:layout_weight="1"
-                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_icon="@drawable/rain"
                 app:wiv_labelText="Rain"
                 app:wiv_value="23 %"
                 android:layout_width="wrap_content"
@@ -145,7 +148,7 @@
             <com.afzaln.kijijiweather.ui.WeatherInfoView
                 android:id="@+id/clouds"
                 android:layout_weight="1"
-                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_icon="@drawable/clouds"
                 app:wiv_labelText="Clouds"
                 app:wiv_value="23 %"
                 android:layout_width="wrap_content"
@@ -154,7 +157,7 @@
             <com.afzaln.kijijiweather.ui.WeatherInfoView
                 android:id="@+id/wind"
                 android:layout_weight="1"
-                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_icon="@drawable/wind"
                 app:wiv_labelText="Wind"
                 app:wiv_value="23 m/s"
                 android:layout_width="wrap_content"
@@ -163,16 +166,16 @@
             <com.afzaln.kijijiweather.ui.WeatherInfoView
                 android:id="@+id/pressure"
                 android:layout_weight="1"
-                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_icon="@drawable/pressure"
                 app:wiv_labelText="Pressure"
-                app:wiv_value="23 hPa"
+                app:wiv_value="23.000 hPa"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <com.afzaln.kijijiweather.ui.WeatherInfoView
                 android:id="@+id/humidity"
                 android:layout_weight="1"
-                app:wiv_icon="@drawable/empty_weather"
+                app:wiv_icon="@drawable/humidity"
                 app:wiv_labelText="Humidity"
                 app:wiv_value="23 %"
                 android:layout_width="wrap_content"
