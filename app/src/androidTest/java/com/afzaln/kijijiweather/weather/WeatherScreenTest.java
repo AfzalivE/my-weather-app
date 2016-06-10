@@ -88,7 +88,7 @@ public class WeatherScreenTest {
 
         viewInteraction.perform(click());
 
-        Thread.sleep(1000);
+        Thread.sleep(1000); // should use EspressoIdling instead of this
         onView(withId(R.id.city)).check(matches(withText("Earth, none")));
     }
 
