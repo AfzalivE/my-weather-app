@@ -21,13 +21,14 @@ import android.support.annotation.NonNull;
 
 import com.afzaln.kijijiweather.data.source.WeatherRepository;
 import com.afzaln.kijijiweather.data.source.local.WeatherLocalDataSource;
+import com.afzaln.kijijiweather.data.source.location.LocationProvider;
 import com.afzaln.kijijiweather.data.source.remote.WeatherRemoteDataSource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Enables injection of production implementations for
- * {@link TasksDataSource} at compile time.
+ * {@link WeatherDataSource} at compile time.
  */
 public class Injection {
 
@@ -35,5 +36,10 @@ public class Injection {
         checkNotNull(context);
         return WeatherRepository.getInstance(WeatherRemoteDataSource.getInstance(),
                 WeatherLocalDataSource.getInstance(context));
+    }
+
+    public static LocationProvider provideLocationProvider(@NonNull Context context) {
+        checkNotNull(context);
+        return LocationProvider.getInstance(context);
     }
 }

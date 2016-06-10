@@ -18,6 +18,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -233,9 +235,18 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         boolean gpsProviderEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
         boolean networkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         if (!gpsProviderEnabled && !networkProviderEnabled) {
-            // TODO show alert dialog to enable location services
-            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(myIntent);
+            AlertDialog.Builder alertDialog = new Builder(getContext());
+            alertDialog.setTitle("Location Services disabled");
+            alertDialog.setMessage("In order to find the weather at your location, you will need to enable Location Services on your device");
+            alertDialog.setPositiveButton("Enable", (dialog, which) -> {
+                Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(myIntent);
+            });
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> {
+                dialog.dismiss();
+            });
+
+            alertDialog.show();
 
             return;
         }
@@ -257,7 +268,14 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     }
 
     private void showPermissionDeniedDialog() {
-        throw new UnsupportedOperationException("Not implemented");
+        AlertDialog.Builder alertDialog = new Builder(getContext());
+        alertDialog.setTitle("Location permission");
+        alertDialog.setMessage("This app needs the location permission to find the weather at your location. You will not have access to this feature without granting the permission");
+        alertDialog.setPositiveButton("OK", (dialog, which) -> {
+            dialog.dismiss();
+        });
+
+        alertDialog.show();
     }
 
     private void doWeatherStringSearch(String searchStr) {
