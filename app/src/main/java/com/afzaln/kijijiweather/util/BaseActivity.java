@@ -3,7 +3,8 @@ package com.afzaln.kijijiweather.util;
 import android.support.v7.app.AppCompatActivity;
 
 /**
- * Created by afzal on 2016-06-04.
+ * For if this app had more activities and
+ * there was common code
  */
 public abstract class BaseActivity extends AppCompatActivity {
 

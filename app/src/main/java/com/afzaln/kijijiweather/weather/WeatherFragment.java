@@ -39,7 +39,6 @@ import com.afzaln.kijijiweather.ui.WeatherInfoView;
 import com.afzaln.kijijiweather.util.BaseFragment;
 import com.afzaln.kijijiweather.util.PresenterFactory;
 import com.afzaln.kijijiweather.util.ResourceUtils;
-import static com.google.common.base.Preconditions.checkNotNull;
 import com.mypopsy.drawable.SearchArrowDrawable;
 import com.mypopsy.widget.FloatingSearchView;
 import timber.log.Timber;
@@ -48,8 +47,11 @@ import timber.log.Timber;
  * Created by afzal on 2016-06-04.
  */
 public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContract.View> implements WeatherContract.View, OnRequestPermissionsResultCallback {
+    // For Location Permission
     private static final int PERMISSION_REQUEST_CODE = 1;
+    // For Voice search intent
     private static final int VOICE_SEARCH_REQUEST_CODE = 2;
+    // To make sure that last weather is not loaded after voice search
     private boolean onActivityResultCalled;
 
     private WeatherContract.Presenter<WeatherContract.View> weatherPresenter;
@@ -93,17 +95,23 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     @BindView(R.id.humidity)
     WeatherInfoView humidityView;
 
+    // Based on the flavour of the app
     @BindString(R.string.country_code)
     String countryCode;
 
     private SearchItemClickListener searchClickListener = new SearchItemClickListener() {
         @Override
         public void delete(Search search) {
-            deleteSearch(search);
+            // delete the desired recent search
+            String searchStr = search.getSearchStr();
+            weatherPresenter.deleteRecentSearch(search);
+            Timber.d("deleted %s", searchStr);
         }
 
         @Override
         public void search(Search search) {
+            // Collapse the search bar and start loading the
+            // desired weather
             Timber.d("Searched for %s", search.getSearchStr());
             searchView.setActivated(false);
             searchView.setText(search.getSearchStr());
@@ -112,16 +120,11 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         }
     };
 
-    private void deleteSearch(Search search) {
-        String searchStr = search.getSearchStr();
-        weatherPresenter.deleteRecentSearch(search);
-        Timber.d("deleted %s", searchStr);
-    }
-
     private SearchAdapter searchAdapter;
 
     public static WeatherFragment newInstance() {
         WeatherFragment fragment = new WeatherFragment();
+        // This layout is inflated in BaseFragment
         fragment.setLayout(R.layout.weather_fragment);
 
         return fragment;
@@ -146,7 +149,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
 
     @Override
     protected PresenterFactory<WeatherPresenter> getPresenterFactory() {
-        return new WeatherPresenterFactory(tag());
+        return new WeatherPresenterFactory();
     }
 
     @Override
@@ -157,9 +160,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         searchAdapter = new SearchAdapter(searchClickListener);
-
         initSearchView(searchAdapter);
     }
 
@@ -168,8 +169,10 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
 
         searchView.setAdapter(adapter);
         EditText searchEditText = (EditText) searchView.findViewById(R.id.fsv_search_text);
+        // to show the search key on the keyboard and to not expand the EditText in landscape
         searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
+        // Collapse the SearchView and perform a search
         searchView.setOnSearchListener(searchStr -> {
             searchView.setActivated(false);
             Timber.d("Searching for %s", searchStr);
@@ -177,6 +180,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
             showProgressBar(true);
         });
 
+        // For voice and location options
         searchView.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case R.id.voice:
@@ -191,12 +195,14 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
             return true;
         });
 
+
         searchView.setOnSearchFocusChangedListener(focused -> {
             if (!focused) {
                 showProgressBar(false);
             }
         });
 
+        // Set the animated arrow/search icon
         SearchArrowDrawable drawable = new SearchArrowDrawable(getContext());
         Drawable wrap = DrawableCompat.wrap(drawable);
         searchView.setIcon(wrap);
@@ -205,12 +211,23 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         });
     }
 
+    /**
+     * Start a speech recognizer intent
+     * to search by voice input
+     */
     private void doVoiceSearch() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         startActivityForResult(intent, VOICE_SEARCH_REQUEST_CODE);
     }
 
+    /**
+     * Get the result of the voice input and perform a search
+     *
+     * @param requestCode The code of the intent request
+     * @param resultCode Result of the intent
+     * @param data Data, in this case, the probable words recognized
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         onActivityResultCalled = true;
@@ -224,6 +241,11 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * Prompt the user for permission or to enable Location services.
+     * Then conduct a weather search by location once the requirements
+     * are fulfilled.
+     */
     private void doCoordinatesWeatherSearch() {
         if (ActivityCompat.checkSelfPermission(getActivity(), permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[] {permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
@@ -253,19 +275,31 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         weatherPresenter.doCoordinatesWeatherSearch();
     }
 
+    /**
+     * Handle permission grant or denial
+     * @param requestCode The code of the permission request
+     * @param permissions Permissions requested
+     * @param grantResults Results of each permission request
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // perform a coordinate weather search
                     weatherPresenter.doCoordinatesWeatherSearch();
                 } else {
+                    // show dialog that we can't use location without this permission
                     showPermissionDeniedDialog();
                 }
                 break;
         }
     }
 
+    /**
+     * Show dialog that explains the consequences of
+     * denying the permission request.
+     */
     private void showPermissionDeniedDialog() {
         AlertDialog.Builder alertDialog = new Builder(getContext());
         alertDialog.setTitle("Location permission");
@@ -277,10 +311,21 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         alertDialog.show();
     }
 
+    /**
+     * Tell the presenter to do a string search
+     *
+     * @param searchStr Search str
+     */
     private void doWeatherStringSearch(String searchStr) {
         weatherPresenter.doStringWeatherSeach(searchStr, countryCode);
     }
 
+    /**
+     * Load the Weather object into the view
+     *
+     * @param weather The object containing weather data
+     * @param animate Whether this update should be animated or not. In case of configuration changes
+     */
     @Override
     public void showWeather(Weather weather, boolean animate) {
         Timber.d("Showing weather for: " + weather.name);
@@ -297,6 +342,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         pressureView.setValue(getString(R.string.pressure, weather.main.pressure));
         humidityView.setValue(getString(R.string.humidity, weather.main.humidity));
 
+        // Load the correct weather drawable
         String iconName = "ic_" + weather.weather[0].icon;
         int drawableId = ResourceUtils.getDrawableIdByName(iconName);
         if (drawableId != 0) {
@@ -348,14 +394,5 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     @Override
     public void showProgressBar(boolean show) {
         searchView.getMenu().findItem(R.id.menu_progress).setVisible(show);
-    }
-
-    private boolean shouldShowNavigationIcon() {
-        return searchView.isActivated();
-    }
-
-    @Override
-    public void setPresenter(@NonNull WeatherContract.Presenter presenter) {
-        weatherPresenter = checkNotNull(presenter);
     }
 }

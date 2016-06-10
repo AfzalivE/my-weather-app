@@ -18,7 +18,7 @@ import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.weather.SearchAdapter.SearchVH;
 
 /**
- * Created by afzal on 2016-06-06.
+ * RecyclerView Adapter for recent search items
  */
 public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
 
@@ -63,6 +63,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
         @BindView(R.id.icon_end)
         ImageView deleteButtonView;
 
+        // listener for item click
         private final SearchItemClickListener listener;
         OnClickListener searchClickListener = new OnClickListener() {
             @Override
@@ -71,13 +72,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
             }
         };
 
+        // listener for delete button click
         OnClickListener deleteClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.delete(search);
             }
         };
-
 
         public SearchVH(View itemView, SearchItemClickListener listener) {
             super(itemView);
@@ -87,6 +88,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchVH> {
             deleteButtonView.setOnClickListener(deleteClickListener);
         }
 
+        // Binds the Search object to the fields in the ViewHolder
         public void bind(Search search) {
             this.search = search;
             searchTextView.setText(search.getSearchStr());

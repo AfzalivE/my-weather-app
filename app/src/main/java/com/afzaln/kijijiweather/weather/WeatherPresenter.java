@@ -21,22 +21,15 @@ import rx.schedulers.Schedulers;
  * Created by afzal on 2016-06-04.
  */
 public class WeatherPresenter implements Presenter<WeatherContract.View> {
-    private final String title;
     private final WeatherRepository weatherRepository;
     private WeatherContract.View weatherView;
     private final LocationProvider locationProvider;
 
     private ViewState lastViewState;
 
-    public WeatherPresenter(String title, @NonNull WeatherRepository weatherRepository, LocationProvider locationProvider) {
-        this.title = title;
+    public WeatherPresenter(@NonNull WeatherRepository weatherRepository, LocationProvider locationProvider) {
         this.weatherRepository = checkNotNull(weatherRepository);
         this.locationProvider = checkNotNull(locationProvider);
-    }
-
-    @Override
-    public void onViewAttached(View view) {
-        onViewAttached(view, true);
     }
 
     @Override
@@ -61,6 +54,10 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         // nothing to clean up
     }
 
+    /**
+     * Perform a search by querying for the user's location
+     * and using the latitude and longitude for the search
+     */
     @Override
     public void doCoordinatesWeatherSearch() {
         Observable<ViewState> weatherObservable = locationProvider.getLastLocation()
@@ -82,6 +79,14 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         updateView(weatherObservable);
     }
 
+
+    /**
+     * Perform a string based search. Could be a city name or a zip code.
+     *
+     * @param searchStr      The search string
+     * @param isoCountryCode Country code of the user to guess country
+     *                       in case zip code is not accompanied by a country code
+     */
     @Override
     public void doStringWeatherSeach(String searchStr, String isoCountryCode) {
         if (searchStr != null && !searchStr.isEmpty()) {
@@ -105,6 +110,9 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         // don't do anything if the EditText is empty
     }
 
+    /**
+     * Search weather for the last searched location
+     */
     private void doLastWeatherSearch() {
         Observable<ViewState> stateObservable = weatherRepository.getRecentSearches()
                 .map(searches -> {
@@ -122,6 +130,14 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         updateView(stateObservable);
     }
 
+
+    /**
+     * Load the weather
+     *
+     * @param forceUpdate Skip cache and update
+     *
+     * @return
+     */
     Transformer<Search, Weather> loadWeather(boolean forceUpdate) {
         return searchObservable -> searchObservable
                 .flatMap(search -> {
@@ -136,27 +152,53 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                 });
     }
 
+    /**
+     * Load all recent searches
+     *
+     * @return Observable
+     */
     private Transformer<Weather, ViewState> loadSearches() {
         return weatherObservable -> weatherObservable
                 .flatMap(weather -> weatherRepository.getRecentSearches()
                         .map(searches -> new ViewState(weather, searches)));
     }
 
+    /**
+     * Apply schedulers to make sure things run in the thread they should
+     *
+     * @param <T> Another type of observable
+     *
+     * @return Same observable with
+     */
     public static <T> Transformer<T, T> applySchedulers() {
         return observable -> observable
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    private void updateView(ViewState viewState, boolean animate) {
-        updateViewSearches(viewState.searches);
-        if (viewState.weather == null) {
-            showEmptyWeather();
-        } else {
-            updateViewWeather(viewState.weather, animate);
+    /**
+     * Delete the requested search and upate the search list
+     *
+     * @param search The search item to delete
+     */
+    @Override
+    public void deleteRecentSearch(@NonNull Search search) {
+        if (search != null) {
+            weatherRepository.deleteRecentSearch(search.getTimestamp());
+            weatherRepository.getRecentSearches()
+                    .<List<Search>>map(searches -> searches)
+                    .compose(applySchedulers())
+                    .subscribe(searches -> {
+                        updateViewSearches(searches);
+                    });
         }
     }
 
+    /**
+     * @param observable The ViewState object which contains the Weather and list of searches
+     *
+     * @return Subscription to future updates
+     */
     private Subscription updateView(Observable<ViewState> observable) {
         return observable
                 .subscribe(viewState -> {
@@ -174,19 +216,26 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                 });
     }
 
-    @Override
-    public void deleteRecentSearch(@NonNull Search search) {
-        if (search != null) {
-            weatherRepository.deleteRecentSearch(search.getTimestamp());
-            weatherRepository.getRecentSearches()
-                    .<List<Search>>map(searches -> searches)
-                    .compose(applySchedulers())
-                    .subscribe(searches -> {
-                        updateViewSearches(searches);
-                    });
+    /**
+     * Update view with the view state
+     *
+     * @param viewState
+     * @param animate
+     */
+    private void updateView(ViewState viewState, boolean animate) {
+        updateViewSearches(viewState.searches);
+        if (viewState.weather == null) {
+            showEmptyWeather();
+        } else {
+            updateViewWeather(viewState.weather, animate);
         }
     }
 
+    /**
+     * Update the list of recent searches
+     *
+     * @param searches Recent searches
+     */
     private void updateViewSearches(List<Search> searches) {
         if (weatherView != null) {
             weatherView.populateRecentSearches(searches);
@@ -207,12 +256,16 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         }
     }
 
+
     private void showError(Throwable throwable) {
         if (weatherView != null) {
             weatherView.showError(throwable.getMessage());
         }
     }
 
+    /**
+     * State of the view
+     */
     private static class ViewState {
         List<Search> searches;
         Weather weather;

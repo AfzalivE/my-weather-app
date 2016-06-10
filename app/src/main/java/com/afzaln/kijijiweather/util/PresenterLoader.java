@@ -2,7 +2,8 @@ package com.afzaln.kijijiweather.util;
 
 import android.content.Context;
 import android.support.v4.content.Loader;
-import android.util.Log;
+
+import timber.log.Timber;
 
 /**
  * Created by afzal on 2016-06-09.
@@ -21,7 +22,7 @@ public class PresenterLoader<P extends BasePresenter> extends Loader<P> {
      * Activity instances.
      *
      * @param context used to retrieve the application context.
-     * @param factory
+     * @param factory The Presenter Factory to use for creating the presenter
      */
     public PresenterLoader(Context context, PresenterFactory<P> factory, String tag) {
         super(context);
@@ -54,17 +55,17 @@ public class PresenterLoader<P extends BasePresenter> extends Loader<P> {
     @Override
     public void deliverResult(P presenter) {
         super.deliverResult(presenter);
-        Log.i("loader", "deliverResult-" + tag);
+        Timber.d("deliverResult-%s", tag);
     }
 
     @Override
     protected void onStopLoading() {
-        Log.i("loader", "onStopLoading-" + tag);
+        Timber.d("onStopLoading-%s", tag);
     }
 
     @Override
     protected void onReset() {
-        Log.i("loader", "onReset-" + tag);
+        Timber.i("onReset-%s", tag);
         if (presenter != null) {
             presenter.onDestroyed();
             presenter = null;

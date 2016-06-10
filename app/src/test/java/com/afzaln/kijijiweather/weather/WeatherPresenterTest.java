@@ -72,7 +72,7 @@ public class WeatherPresenterTest {
         getRecentSearches.thenReturn(just);
 
         when(locationProvider.getLastLocation()).thenReturn(Observable.just(lastLocation));
-        presenter = new WeatherPresenter("test", weatherRepository, locationProvider);
+        presenter = new WeatherPresenter(weatherRepository, locationProvider);
         presenter.onViewAttached(weatherView, false);
     }
 

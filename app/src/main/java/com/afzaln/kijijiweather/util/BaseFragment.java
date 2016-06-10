@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import butterknife.ButterKnife;
 
 /**
- * Created by afzal on 2016-06-04.
+ * Base class to load a view and create the presenter
  */
 public abstract class BaseFragment<P extends BasePresenter<V>, V> extends Fragment {
 

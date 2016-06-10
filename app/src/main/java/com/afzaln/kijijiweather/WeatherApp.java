@@ -14,6 +14,7 @@ public class WeatherApp extends Application {
     public void onCreate() {
         super.onCreate();
         if (BuildConfig.DEBUG) {
+            // For debug logging
             Timber.plant(new DebugTree());
         }
     }

@@ -17,8 +17,20 @@
 package com.afzaln.kijijiweather.util;
 
 public interface BasePresenter<V> {
-    void onViewAttached(V view);
+    /**
+     * Load initial things into view
+     * @param view The view to use
+     * @param autoLoad Whether to load data automatically or not
+     */
     void onViewAttached(V view, boolean autoLoad);
+
+    /**
+     * View was destroyed, hence deteched
+     */
     void onViewDetached();
+
+    /**
+     * Cleanup resources
+     */
     void onDestroyed();
 }

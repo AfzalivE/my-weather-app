@@ -7,7 +7,7 @@ import com.afzaln.kijijiweather.R;
 import com.afzaln.kijijiweather.util.BaseActivity;
 
 /**
- * Created by afzal on 2016-06-04.
+ * Main entry point of the app
  */
 public class WeatherActivity extends BaseActivity {
 
@@ -15,6 +15,7 @@ public class WeatherActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_activity);
+        // to slightly improve overdraw performance
         getWindow().setBackgroundDrawable(null);
         ButterKnife.bind(this);
 

@@ -3,7 +3,7 @@ package com.afzaln.kijijiweather.weather;
 import com.afzaln.kijijiweather.data.Search;
 
 /**
- * Created by afzal on 2016-06-06.
+ * Interface for delete and search item clicks
  */
 public interface SearchItemClickListener {
     void delete(Search search);
