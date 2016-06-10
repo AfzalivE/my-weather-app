@@ -16,8 +16,6 @@ import rx.Observable.Transformer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
-import timber.log.Timber;
 
 /**
  * Created by afzal on 2016-06-04.
@@ -27,7 +25,6 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     private final WeatherRepository weatherRepository;
     private WeatherContract.View weatherView;
     private final LocationProvider locationProvider;
-    private CompositeSubscription subscriptions;
 
     private ViewState lastViewState;
 
@@ -35,7 +32,6 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         this.title = title;
         this.weatherRepository = checkNotNull(weatherRepository);
         this.locationProvider = checkNotNull(locationProvider);
-        subscriptions = new CompositeSubscription();
     }
 
     @Override
@@ -58,7 +54,6 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     @Override
     public void onViewDetached() {
         weatherView = null;
-        subscriptions.clear();
     }
 
     @Override
@@ -72,14 +67,12 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                 // to obtain location in the background thread
                 .observeOn(Schedulers.io())
                 .map(location -> {
-                    Timber.d("Observable gotLocation: " + Thread.currentThread().getName());
                     if (location != null) {
                         Search search = new Search();
                         search.setLatLon(location.getLatitude(), location.getLongitude());
                         return search;
                     } else {
-                        // TODO maybe show error?
-                        return null;
+                        throw new NullPointerException("Unable to fetch location");
                     }
                 })
                 .compose(loadWeather(true))
@@ -132,7 +125,6 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     Transformer<Search, Weather> loadWeather(boolean forceUpdate) {
         return searchObservable -> searchObservable
                 .flatMap(search -> {
-                    Timber.d("Weather search: " + Thread.currentThread().getName());
                     if (search == null) {
                         return null;
                     }
@@ -176,7 +168,9 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
                     showError(throwable);
                 }, () -> {
                     // onCompleted
-                    weatherView.showProgressBar(false);
+                    if (weatherView != null) {
+                        weatherView.showProgressBar(false);
+                    }
                 });
     }
 

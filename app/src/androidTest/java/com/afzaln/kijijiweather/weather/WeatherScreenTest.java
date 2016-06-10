@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -17,14 +19,15 @@ import android.widget.ListView;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.pressImeActionButton;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.*;
+import com.afzaln.kijijiweather.Injection;
 import com.afzaln.kijijiweather.R;
 import com.afzaln.kijijiweather.data.Search;
 import com.afzaln.kijijiweather.data.source.WeatherRepository;
 import static com.google.common.base.Preconditions.checkArgument;
-
-import com.afzaln.kijijiweather.Injection;
 import static org.hamcrest.Matchers.allOf;
 
 /**
@@ -54,7 +57,7 @@ public class WeatherScreenTest {
                     WeatherRepository weatherRepository = Injection.provideWeatherRepository(InstrumentationRegistry.getTargetContext());
                     weatherRepository.deleteAllRecentSearches();
                     Search search = new Search();
-                    search.setSearchStr("test");
+                    search.setSearchStr("Earth");
                     search.setLatLon(0, 0);
                     weatherRepository.saveRecentSearch(search);
 
@@ -94,26 +97,48 @@ public class WeatherScreenTest {
     public void clickSearchView_opensRecentList() {
         // Click on the search view
         onView(withId(R.id.search_view)).perform(click());
-
         // Check if an element from the recent_search_items.xml is visible
-        onView(withId(R.id.icon_end)).check(matches(isDisplayed()));
-//        onView(withId(R.id.text)).check(matches(isDisplayed()));
-//        onView(withId(R.id.icon_end)).check(matches(isDisplayed()));
+        ViewInteraction viewInteraction = onView(allOf(withId(R.id.fsv_suggestions_list)));
+        viewInteraction.check(matches(isDisplayed()));
+//        onView(allOf(withId(R.id.icon_start), isDisplayed()));
+//        onView(allOf(withId(R.id.icon_end), isDisplayed()));
+//        onView(allOf(withId(R.id.text), isDisplayed()));
+
+//        onView(allOf(withText("Eaasdjath"), isDisplayed()));
     }
 
     @Test
     public void clickDeleteIcon_removesItemFromList() {
+        // Click on the search view
+        onView(withId(R.id.search_view)).perform(click());
 
+        ViewInteraction viewInteraction = onView(allOf(withId(R.id.icon_end), isDisplayed()));
+        viewInteraction.perform(click());
+
+//        onView(withId(R.id.fsv_suggestions_list))
+//                .perform(RecyclerViewActions.actionOnItemAtPosition(0, withId(R.id.icon_end), click()));
+//        onView(withId(R.id.fsv_suggestions_list)).perform()
     }
 
     @Test
-    public void clickVoiceIcon_opensGoogleSpeechActivity() {
+    public void clickRecentSearch_changesCityName() {
+        // Click on the search view
+        onView(withId(R.id.search_view)).perform(click());
 
+        // Check if an element from the recent_search_items.xml is visible
+        ViewInteraction viewInteraction = onView(allOf(withId(R.id.fsv_suggestions_list), isDisplayed()));
+
+        viewInteraction
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+
+        onView(withId(R.id.city)).check(matches(withItemText("Earth, none")));
     }
 
     @Test
-    public void clickLocationIcon() {
+    public void enterSearchString_changesCityName() {
+        // Click on the search view
+        onView(withId(R.id.fsv_search_text)).perform(typeText("London"), pressImeActionButton());
 
+        onView(withItemText("London, GB")).check(matches(isDisplayed()));
     }
-
 }

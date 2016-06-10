@@ -13,14 +13,14 @@ import java.util.List;
 import android.content.Context;
 
 import com.afzaln.kijijiweather.data.Search;
+import com.afzaln.kijijiweather.data.TestUtils;
 import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.data.Weather.Coord;
-import rx.Observable;
-import rx.observers.TestSubscriber;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
+import rx.Observable;
+import rx.observers.TestSubscriber;
 
 /**
  * Created by afzal on 2016-06-04.
@@ -53,22 +53,11 @@ public class WeatherRepositoryTest {
         responseWeather.coord.lat = 0;
         responseWeather.coord.lon = 0;
         when(weatherRemoteDataSource.getWeather(CITY_NAME_SEARCH)).thenReturn(Observable.just(responseWeather));
-        Observable<ArrayList<Search>> just = Observable.just(listOf("test1", "test2"));
+        Observable<ArrayList<Search>> just = Observable.just(TestUtils.listOf("test1", "test2"));
         OngoingStubbing<Observable<? extends List<Search>>> when = when(weatherLocalDataSource.getRecentSearches());
         when.thenReturn(just);
 
         weatherRepository = WeatherRepository.getInstance(weatherRemoteDataSource, weatherLocalDataSource);
-    }
-
-    public static ArrayList<Search> listOf(String... searchStrs) {
-        ArrayList<Search> searches = new ArrayList<>();
-        for (String searchStr : searchStrs) {
-            Search search = new Search();
-            search.setSearchStr(searchStr);
-            searches.add(search);
-        }
-
-        return searches;
     }
 
     @After

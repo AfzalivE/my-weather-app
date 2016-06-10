@@ -17,7 +17,10 @@ public class WeatherPresenterFactory extends PresenterFactory<WeatherPresenter> 
 
     @Override
     public WeatherPresenter create(Context context) {
-        return new WeatherPresenter(title, Injection.provideWeatherRepository(context.getApplicationContext()), Injection.provideLocationProvider(context.getApplicationContext()));
+        return new WeatherPresenter(title,
+                Injection.provideWeatherRepository(context.getApplicationContext()),
+                Injection.provideLocationProvider(context.getApplicationContext())
+        );
     }
 
 }

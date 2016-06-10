@@ -76,7 +76,6 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
         Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (null != currentLocation) {
             if (subscriber != null && !subscriber.isUnsubscribed()) {
-                Timber.d("Observable onNext: %s", Thread.currentThread().getName());
                 subscriber.onNext(currentLocation);
             }
         } else {
@@ -84,7 +83,6 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     if (subscriber != null && !subscriber.isUnsubscribed()) {
-                        Timber.d("Observable onNext: %s", Thread.currentThread().getName());
                         subscriber.onNext(locationResult.getLastLocation());
                     }
                     LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
