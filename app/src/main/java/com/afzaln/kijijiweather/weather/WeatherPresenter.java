@@ -136,7 +136,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
      *
      * @param forceUpdate Skip cache and update
      *
-     * @return
+     * @return The Observable containing weather data
      */
     Transformer<Search, Weather> loadWeather(boolean forceUpdate) {
         return searchObservable -> searchObservable
@@ -155,7 +155,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     /**
      * Load all recent searches
      *
-     * @return Observable
+     * @return Observable containing all the searches
      */
     private Transformer<Weather, ViewState> loadSearches() {
         return weatherObservable -> weatherObservable
@@ -168,7 +168,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
      *
      * @param <T> Another type of observable
      *
-     * @return Same observable with
+     * @return Same observable with specified schedulers
      */
     public static <T> Transformer<T, T> applySchedulers() {
         return observable -> observable
@@ -219,8 +219,8 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     /**
      * Update view with the view state
      *
-     * @param viewState
-     * @param animate
+     * @param viewState The object containing Searches and Weather data
+     * @param animate Whether to animate this update or not
      */
     private void updateView(ViewState viewState, boolean animate) {
         updateViewSearches(viewState.searches);

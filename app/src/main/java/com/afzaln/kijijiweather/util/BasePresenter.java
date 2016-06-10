@@ -25,7 +25,7 @@ public interface BasePresenter<V> {
     void onViewAttached(V view, boolean autoLoad);
 
     /**
-     * View was destroyed, hence deteched
+     * View was destroyed, hence detached
      */
     void onViewDetached();
 
