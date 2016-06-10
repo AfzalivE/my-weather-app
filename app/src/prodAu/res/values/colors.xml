@@ -15,8 +15,9 @@
   -->
 
 <resources>
+    <!-- Customize flavour-based colours here -->
     <color name="colorPrimary">#455A64</color>
     <color name="colorPrimaryDark">#263238</color>
-    <color name="colorAccent">#D50000</color>
+    <color name="colorAccent">#FF37BC9B</color>
 
 </resources>
