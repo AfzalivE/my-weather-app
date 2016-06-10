@@ -18,6 +18,8 @@
     <!-- Customize flavour-based colours here -->
     <color name="colorPrimary">#455A64</color>
     <color name="colorPrimaryDark">#263238</color>
-    <color name="colorAccent">#FF37BC9B</color>
+    <color name="colorAccent">#FFFB6E52</color>
+    <color name="bg">#FFE9573E</color>
+    <color name="bg_light">@color/colorAccent</color>
 
 </resources>

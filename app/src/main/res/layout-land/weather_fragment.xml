@@ -36,7 +36,7 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
+            android:textColor="@color/textColor"
             android:text="@string/empty_screen" />
     </LinearLayout>
 
@@ -65,7 +65,7 @@
                 android:text="Toronto"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-condensed"
-                android:textColor="@android:color/white"
+                android:textColor="@color/textColor"
                 tools:text="Downtown Toronto, CA" />
 
             <LinearLayout
@@ -91,7 +91,7 @@
                     android:text="23 C"
                     tools:text="23 C"
                     android:textStyle="bold"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/textColor"
                     android:textSize="40sp" />
 
             </LinearLayout>
@@ -109,7 +109,7 @@
                 android:gravity="center_horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
+                android:textColor="@color/textColor"
                 android:textAllCaps="true"
                 android:text="The weather now is" />
 
@@ -123,7 +123,7 @@
                 tools:text="Clear sky"
                 android:textStyle="bold"
                 android:textAllCaps="true"
-                android:textColor="@android:color/white"
+                android:textColor="@color/textColor"
                 android:textSize="24sp" />
 
         </LinearLayout>
