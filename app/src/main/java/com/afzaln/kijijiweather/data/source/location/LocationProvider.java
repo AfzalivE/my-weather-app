@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
-import com.afzaln.kijijiweather.weather.WeatherPresenter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -23,7 +22,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import rx.Observable;
 import rx.Subscriber;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -78,7 +76,7 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
         Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (null != currentLocation) {
             if (subscriber != null && !subscriber.isUnsubscribed()) {
-                Timber.d("Observable onNext: " + Thread.currentThread().getName());
+                Timber.d("Observable onNext: %s", Thread.currentThread().getName());
                 subscriber.onNext(currentLocation);
             }
         } else {
@@ -86,7 +84,7 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     if (subscriber != null && !subscriber.isUnsubscribed()) {
-                        Timber.d("Observable onNext: " + Thread.currentThread().getName());
+                        Timber.d("Observable onNext: %s", Thread.currentThread().getName());
                         subscriber.onNext(locationResult.getLastLocation());
                     }
                     LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
@@ -94,9 +92,7 @@ public class LocationProvider implements ConnectionCallbacks, OnConnectionFailed
             };
 
             PendingResult<Status> statusPendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, LocationRequest.create(), locationListener, Looper.myLooper());
-            statusPendingResult.setResultCallback(status -> {
-                Timber.d(String.valueOf(status.isSuccess()));
-            });
+            statusPendingResult.setResultCallback(status -> Timber.d(String.valueOf(status.isSuccess())));
         }
     }
 

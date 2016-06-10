@@ -6,6 +6,8 @@
 -keep class com.google.common.base.Preconditions { *; }
 -keep class rx.observers.TestSubscriber { *; }
 -keep class rx.observers.TestScheduler { *; }
+-keep class com.mypopsy.drawable.SearchArrowDrawable { *; }
+-keep class com.mypopsy.drawable.ToggleDrawable { *; }
 
 # For Guava:
 -dontwarn javax.annotation.**

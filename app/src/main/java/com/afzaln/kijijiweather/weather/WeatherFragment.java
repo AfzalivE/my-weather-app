@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -18,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.view.View;
@@ -113,7 +115,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
     private void deleteSearch(Search search) {
         String searchStr = search.getSearchStr();
         weatherPresenter.deleteRecentSearch(search);
-        Timber.d("deleted " + searchStr);
+        Timber.d("deleted %s", searchStr);
     }
 
     private SearchAdapter searchAdapter;
@@ -170,7 +172,7 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
 
         searchView.setOnSearchListener(searchStr -> {
             searchView.setActivated(false);
-            Timber.d("Searching for " + searchStr);
+            Timber.d("Searching for %s", searchStr);
             doWeatherStringSearch(searchStr.toString());
             showProgressBar(true);
         });
@@ -190,17 +192,14 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         });
 
         searchView.setOnSearchFocusChangedListener(focused -> {
-            boolean textEmpty = searchView.getText().length() == 0;
-
             if (!focused) {
                 showProgressBar(false);
             }
-            searchView.showLogo(!focused && textEmpty);
-
-            searchView.showIcon(true);
         });
 
-        searchView.setIcon(new SearchArrowDrawable(getContext()));
+        SearchArrowDrawable drawable = new SearchArrowDrawable(getContext());
+        Drawable wrap = DrawableCompat.wrap(drawable);
+        searchView.setIcon(wrap);
         searchView.setOnIconClickListener(() -> {
             searchView.setActivated(!searchView.isActivated());
         });

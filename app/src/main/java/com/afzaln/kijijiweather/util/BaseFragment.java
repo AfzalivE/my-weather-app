@@ -41,7 +41,7 @@ public abstract class BaseFragment<P extends BasePresenter<V>, V> extends Fragme
         return view;
     }
 
-    public void setLayout(@LayoutRes int layout) {
+    protected void setLayout(@LayoutRes int layout) {
         Bundle args = new Bundle();
         args.putInt("layout", layout);
         setArguments(args);
@@ -79,7 +79,7 @@ public abstract class BaseFragment<P extends BasePresenter<V>, V> extends Fragme
         onResume(true);
     }
 
-    public void onResume(boolean autoLoad) {
+    protected void onResume(boolean autoLoad) {
         super.onResume();
         presenter.onViewAttached(getPresenterView(), autoLoad);
     }

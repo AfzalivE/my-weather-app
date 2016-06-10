@@ -76,6 +76,11 @@ android {
             }
         }
     }
+
+    lintOptions {
+        disable 'InvalidPackage','UnusedAttribute'
+        abortOnError false
+    }
 }
 
 /*
@@ -85,7 +90,6 @@ android {
 dependencies {
     // App's dependencies, including test
     compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    compile "com.android.support:cardview-v7:$rootProject.supportLibraryVersion"
     compile "com.android.support:design:$rootProject.supportLibraryVersion"
     compile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"

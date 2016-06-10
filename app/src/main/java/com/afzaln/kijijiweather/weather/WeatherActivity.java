@@ -11,8 +11,6 @@ import com.afzaln.kijijiweather.util.BaseActivity;
  */
 public class WeatherActivity extends BaseActivity {
 
-    private WeatherFragment weatherFragment;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,7 +18,7 @@ public class WeatherActivity extends BaseActivity {
         getWindow().setBackgroundDrawable(null);
         ButterKnife.bind(this);
 
-        weatherFragment = (WeatherFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        WeatherFragment weatherFragment = (WeatherFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
 
         if (weatherFragment == null) {
             // Create the fragment

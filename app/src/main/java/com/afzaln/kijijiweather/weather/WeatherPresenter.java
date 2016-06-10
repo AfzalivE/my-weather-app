@@ -91,9 +91,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
 
     @Override
     public void doStringWeatherSeach(String searchStr, String isoCountryCode) {
-        if (searchStr == null || searchStr.isEmpty()) {
-            // don't do anything if the EditText is empty
-        } else {
+        if (searchStr != null && !searchStr.isEmpty()) {
             Search search = new Search();
             if (Search.determineSearchType(searchStr) == Search.SEARCH_TYPE_ZIPCODE) {
                 // check for country code presence
@@ -111,6 +109,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
 
             updateView(stateObservable);
         }
+        // don't do anything if the EditText is empty
     }
 
     private void doLastWeatherSearch() {

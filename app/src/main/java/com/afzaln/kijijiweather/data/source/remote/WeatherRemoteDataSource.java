@@ -28,7 +28,7 @@ public class WeatherRemoteDataSource implements WeatherDataSource {
     private static String OPENWEATHER_API_KEY = "95d190a434083879a6398aafd54d9e73";
 
     private static WeatherRemoteDataSource INSTANCE;
-    private final Interceptor openWeatherApiKeyInterceptor = chain -> {
+    private static final Interceptor openWeatherApiKeyInterceptor = chain -> {
         Request request = chain.request();
         HttpUrl url = request.url().newBuilder().addQueryParameter("APPID", OPENWEATHER_API_KEY).build();
         request = request.newBuilder().url(url).build();
@@ -46,7 +46,7 @@ public class WeatherRemoteDataSource implements WeatherDataSource {
 
     private WeatherRemoteDataSource() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(Level.BODY);
+        loggingInterceptor.setLevel(Level.NONE);
 
         Retrofit weatherRetrofit = buildRetrofit(OPENWEATHER_BASE_URL, loggingInterceptor, openWeatherApiKeyInterceptor);
         weatherApiService = weatherRetrofit.create(OpenWeatherApiService.class);
