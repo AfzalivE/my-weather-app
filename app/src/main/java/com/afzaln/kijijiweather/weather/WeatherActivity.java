@@ -17,6 +17,7 @@ public class WeatherActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_activity);
+        getWindow().setBackgroundDrawable(null);
         ButterKnife.bind(this);
 
         weatherFragment = (WeatherFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);

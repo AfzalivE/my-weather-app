@@ -33,12 +33,26 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Injection {
 
+    /**
+     * There would be a mock weather repository here that would return mock things
+     * but not today.
+     *
+     * @param context Application context
+     * @return WeatherRepository
+     */
     public static WeatherRepository provideWeatherRepository(@NonNull Context context) {
         checkNotNull(context);
         return WeatherRepository.getInstance(WeatherRemoteDataSource.getInstance(),
                 WeatherLocalDataSource.getInstance(context));
     }
 
+    /**
+     * There would be a mock location provider here that would return mock locations
+     * but not today.
+     *
+     * @param context Application context
+     * @return LocationProvider
+     */
     public static LocationProvider provideLocationProvider(@NonNull Context context) {
         checkNotNull(context);
         return LocationProvider.getInstance(context);
