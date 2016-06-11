@@ -2,9 +2,13 @@ package com.afzaln.kijijiweather.weather;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.OngoingStubbing;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +22,21 @@ import com.afzaln.kijijiweather.data.Weather;
 import com.afzaln.kijijiweather.data.Weather.Coord;
 import com.afzaln.kijijiweather.data.source.WeatherRepository;
 import com.afzaln.kijijiweather.data.source.location.LocationProvider;
+import com.afzaln.kijijiweather.util.RxUtils;
 import com.afzaln.kijijiweather.weather.WeatherContract.View;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import junit.framework.Assert;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
 
 /**
- * Created by afzal on 2016-06-10.
+ * Tests for WeatherPresenter
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(RxUtils.class)
 public class WeatherPresenterTest {
     TestScheduler testScheduler = new TestScheduler();
 
@@ -63,15 +73,24 @@ public class WeatherPresenterTest {
 
     @Before
     public void setup() {
+        mockStatic(RxUtils.class);
+        when(RxUtils.applySchedulers()).thenReturn(objectObservable -> objectObservable
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate()));
+
+        when(RxUtils.observeInBackground()).thenReturn(objectObservable -> objectObservable
+                .observeOn(Schedulers.immediate())
+                .subscribeOn(Schedulers.immediate()));
+
         MockitoAnnotations.initMocks(this);
 
-        when(weatherRepository.getWeather(CITY_NAME_SEARCH)).thenReturn(Observable.just(responseWeather).subscribeOn(testScheduler));
-
+        when(weatherRepository.getWeather(any(Search.class))).thenReturn(Observable.just(responseWeather));
         OngoingStubbing<Observable<? extends List<Search>>> getRecentSearches = when(weatherRepository.getRecentSearches());
-        Observable<ArrayList<Search>> just = Observable.just(TEST_SEARCHES).subscribeOn(testScheduler);
+        Observable<ArrayList<Search>> just = Observable.just(TEST_SEARCHES);
         getRecentSearches.thenReturn(just);
 
         when(locationProvider.getLastLocation()).thenReturn(Observable.just(lastLocation));
+
         presenter = new WeatherPresenter(weatherRepository, locationProvider);
         presenter.onViewAttached(weatherView, false);
     }
@@ -81,7 +100,15 @@ public class WeatherPresenterTest {
         presenter.doStringWeatherSeach("Toronto", "ca");
         testScheduler.triggerActions();
 
+        ArgumentCaptor<Boolean> progressCaptor = ArgumentCaptor.forClass(Boolean.class);
+        verify(weatherView, times(2)).showProgressBar(progressCaptor.capture());
+        Assert.assertEquals(Boolean.TRUE, progressCaptor.getAllValues().get(0));
+        Assert.assertEquals(Boolean.FALSE, progressCaptor.getAllValues().get(1));
+
+        verify(weatherRepository).getWeather(any(Search.class));
+        verify(weatherRepository).getRecentSearches();
         verify(weatherView).showWeather(responseWeather, true);
+        verify(weatherView).populateRecentSearches(TEST_SEARCHES);
     }
 
 
@@ -90,7 +117,15 @@ public class WeatherPresenterTest {
         presenter.doCoordinatesWeatherSearch();
         testScheduler.triggerActions();
 
+        ArgumentCaptor<Boolean> progressCaptor = ArgumentCaptor.forClass(Boolean.class);
+        verify(weatherView, times(2)).showProgressBar(progressCaptor.capture());
+        Assert.assertEquals(Boolean.TRUE, progressCaptor.getAllValues().get(0));
+        Assert.assertEquals(Boolean.FALSE, progressCaptor.getAllValues().get(1));
+
+        verify(weatherRepository).getWeather(any(Search.class));
+        verify(weatherRepository).getRecentSearches();
         verify(weatherView).showWeather(responseWeather, true);
+        verify(weatherView).populateRecentSearches(TEST_SEARCHES);
     }
 
     @Test
@@ -98,6 +133,8 @@ public class WeatherPresenterTest {
         presenter.deleteRecentSearch(CITY_NAME_SEARCH);
         testScheduler.triggerActions();
 
+        verify(weatherRepository).deleteRecentSearch(CITY_NAME_SEARCH.getTimestamp());
+        verify(weatherRepository).getRecentSearches();
         verify(weatherView).populateRecentSearches(TEST_SEARCHES);
     }
 }
