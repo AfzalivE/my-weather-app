@@ -115,7 +115,6 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
             Timber.d("Searched for %s", search.getSearchStr());
             searchView.setActivated(false);
             searchView.setText(search.getSearchStr());
-            showProgressBar(true);
             doWeatherStringSearch(search.getSearchStr());
         }
     };
@@ -177,7 +176,6 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
             searchView.setActivated(false);
             Timber.d("Searching for %s", searchStr);
             doWeatherStringSearch(searchStr.toString());
-            showProgressBar(true);
         });
 
         // For voice and location options
@@ -196,11 +194,11 @@ public class WeatherFragment extends BaseFragment<WeatherPresenter, WeatherContr
         });
 
 
-        searchView.setOnSearchFocusChangedListener(focused -> {
-            if (!focused) {
-                showProgressBar(false);
-            }
-        });
+//        searchView.setOnSearchFocusChangedListener(focused -> {
+//            if (!focused) {
+//                showProgressBar(false);
+//            }
+//        });
 
         // Set the animated arrow/search icon
         SearchArrowDrawable drawable = new SearchArrowDrawable(getContext());
