@@ -182,15 +182,13 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
     }
 
     /**
-     * The subscriber that updates the view based on the view state, or shows an error
+     * The observer that updates the view based on the view state, or shows an error
      */
     private Observer<? super ViewState> updateViewObserver = new Observer<ViewState>() {
         @Override
         public void onCompleted() {
             // onCompleted
-            if (weatherView != null) {
-                weatherView.showProgressBar(false);
-            }
+
         }
 
         @Override
@@ -203,6 +201,7 @@ public class WeatherPresenter implements Presenter<WeatherContract.View> {
         public void onNext(ViewState viewState) {
             // onNext
             updateView(viewState, true);
+            showProgressBar(false);
             lastViewState = viewState;
         }
     };
