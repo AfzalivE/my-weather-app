@@ -138,7 +138,7 @@
             android:layout_height="match_parent"
             android:weightSum="5">
 
-            <com.afzaln.kijijiweather.ui.WeatherInfoView
+            <com.afzaln.myweatherapp.ui.WeatherInfoView
                 android:id="@+id/rain"
                 android:layout_weight="1"
                 app:wiv_icon="@drawable/rain"
@@ -147,7 +147,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
-            <com.afzaln.kijijiweather.ui.WeatherInfoView
+            <com.afzaln.myweatherapp.ui.WeatherInfoView
                 android:id="@+id/clouds"
                 android:layout_weight="1"
                 app:wiv_icon="@drawable/clouds"
@@ -156,7 +156,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
-            <com.afzaln.kijijiweather.ui.WeatherInfoView
+            <com.afzaln.myweatherapp.ui.WeatherInfoView
                 android:id="@+id/wind"
                 android:layout_weight="1"
                 app:wiv_icon="@drawable/wind"
@@ -165,7 +165,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
-            <com.afzaln.kijijiweather.ui.WeatherInfoView
+            <com.afzaln.myweatherapp.ui.WeatherInfoView
                 android:id="@+id/pressure"
                 android:layout_weight="1"
                 app:wiv_icon="@drawable/pressure"
@@ -174,7 +174,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
-            <com.afzaln.kijijiweather.ui.WeatherInfoView
+            <com.afzaln.myweatherapp.ui.WeatherInfoView
                 android:id="@+id/humidity"
                 android:layout_weight="1"
                 app:wiv_icon="@drawable/humidity"

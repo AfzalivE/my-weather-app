@@ -5,7 +5,7 @@
     <item
         android:id="@+id/menu_progress"
         android:title=""
-        app:actionViewClass="com.afzaln.kijijiweather.ui.MenuProgressBar"
+        app:actionViewClass="com.afzaln.myweatherapp.ui.MenuProgressBar"
         android:visible="false"
         app:showAsAction="always" />
 

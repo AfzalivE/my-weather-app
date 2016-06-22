@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <string name="app_name">My Kijiji Weather</string>
+    <string name="app_name">My Weather App</string>
     <string name="empty_screen">Maybe it\'s sunny, maybe it\'s rainy. You won\'t know until you search.</string>
 
     <string name="temp">%.0f&#xb0;C</string>
