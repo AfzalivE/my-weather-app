@@ -1,5 +1,7 @@
 # Weather app
 
+<a href="https://gitlab.com/AfzalivE/my-weather-app/pipelines"><img src="https://gitlab.com/AfzalivE/my-weather-app/badges/master/build.svg"></a>
+
 Just another weather app with MVP, RxJava and Realm.
 
 <img src="resources/ca-1.png" width="256">
